@@ -13,6 +13,9 @@ Route::get('/', function () {
 Route::get('/about-us', function () {
     return view('aboutus');
 });
+Route::get('/tes', function () {
+    return view('tes');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');

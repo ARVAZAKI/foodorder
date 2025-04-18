@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('transaction_id');
             $table->foreign('transaction_id')->references('id')->on('transactions');
             $table->unsignedBigInteger('item_id');
-            $table->foreign('item_id')->references('id')->on('items');
+            $table->foreign('item_id')->references('id')->on('items')->onDelete('cascade');
             $table->integer('quantity');
             $table->timestamps();
         });
