@@ -1,18 +1,19 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
+use Midtrans\Snap;
 use App\Models\Cart;
 use App\Models\Item;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Midtrans\Config;
-use Midtrans\Snap;
-use Midtrans\Notification;
 use Endroid\QrCode\QrCode;
+use Midtrans\Notification;
+use App\Models\Transaction;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 
 class TransactionController extends Controller
 {
@@ -195,40 +196,71 @@ class TransactionController extends Controller
 
     // Webhook untuk memperbarui status pembayaran
     public function handleNotification(Request $request)
-    {
-        try {
-            Config::$serverKey = config('services.midtrans.server_key');
-            $notification = new Notification();
-
-            $orderId = $notification->order_id;
-            $status = $notification->transaction_status;
-            $transaction = Transaction::where('transaction_code', $orderId)->first();
-
-            if (!$transaction) {
-                Log::error('Transaksi tidak ditemukan untuk notifikasi', ['order_id' => $orderId]);
-                return response()->json(['status' => 'error'], 404);
-            }
-
-            // Update status pembayaran
-            if ($status == 'settlement') {
+{
+    Log::info('Webhook dari Midtrans diterima', ['request' => $request->all()]);
+    
+    try {
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production');
+        
+        // Tangkap raw input dari Midtrans
+        $input = file_get_contents('php://input');
+        Log::info('Raw input dari Midtrans', ['input' => $input]);
+        
+        $notification = new Notification();
+        
+        // Ekstrak data penting
+        $orderId = $notification->order_id;
+        $transactionStatus = $notification->transaction_status;
+        $fraudStatus = $notification->fraud_status;
+        $paymentType = $notification->payment_type ?? 'unknown';
+        
+        Log::info('Data transaksi dari Midtrans', [
+            'order_id' => $orderId,
+            'status' => $transactionStatus,
+            'fraud_status' => $fraudStatus,
+            'payment_type' => $paymentType
+        ]);
+        
+        // Cari transaksi berdasarkan kode
+        $transaction = Transaction::where('transaction_code', $orderId)->firstOrFail();
+        
+        // Update status transaksi
+        if ($transactionStatus == 'capture') {
+            if ($fraudStatus == 'challenge') {
+                $transaction->payment_status = 'challenge';
+            } else if ($fraudStatus == 'accept') {
                 $transaction->payment_status = 'paid';
-            } elseif ($status == 'pending') {
-                $transaction->payment_status = 'pending';
-            } elseif (in_array($status, ['deny', 'expire', 'cancel'])) {
-                $transaction->payment_status = 'failed';
             }
-
-            $transaction->save();
-            Log::info('Status pembayaran diperbarui', [
-                'order_id' => $orderId,
-                'status' => $status,
-                'payment_status' => $transaction->payment_status
-            ]);
-
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            Log::error('Gagal memproses notifikasi Midtrans', ['error' => $e->getMessage()]);
-            return response()->json(['status' => 'error'], 500);
+        } else if ($transactionStatus == 'settlement') {
+            $transaction->payment_status = 'paid';
+        } else if ($transactionStatus == 'cancel' || $transactionStatus == 'deny' || $transactionStatus == 'expire') {
+            $transaction->payment_status = 'failed';
+        } else if ($transactionStatus == 'pending') {
+            $transaction->payment_status = 'pending';
         }
+        
+        // Tambahkan metadata pembayaran
+        $transaction->payment_method = $paymentType;
+        $transaction->payment_data = json_encode($notification->getResponse());
+        
+        // Simpan transaksi
+        $transaction->save();
+        
+        Log::info('Status transaksi diperbarui', [
+            'order_id' => $orderId,
+            'old_status' => $transaction->getOriginal('payment_status'),
+            'new_status' => $transaction->payment_status
+        ]);
+        
+        return response()->json(['status' => 'success']);
+    } catch (\Exception $e) {
+        Log::error('Gagal memproses notifikasi Midtrans', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request' => $request->all()
+        ]);
+        return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
     }
+}
 }

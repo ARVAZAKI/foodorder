@@ -8,6 +8,7 @@
         "php": "^8.2",
         "endroid/qr-code": "*",
         "laravel/framework": "^11.0",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "midtrans/midtrans-php": "^2.6",
         "simplesoftwareio/simple-qrcode": "^4.2"

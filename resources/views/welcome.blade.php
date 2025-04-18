@@ -71,14 +71,6 @@
             <a href="/about-us" class="hover:underline hover:decoration-[#556B2F] hover:decoration-2 hover:underline-offset-2">About Us</a>
             <a href="/menu" class="hover:underline hover:decoration-[#556B2F] hover:decoration-2 hover:underline-offset-2">Menu</a>
         </div>
-        <div class="flex items-center space-x-2">
-            <svg class="w-5 h-5 text-[#8B4513]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.16 14h9.84c.75 0 1.41-.41 1.75-1.03l3.58-6.49a.996.996 0 0 0-.87-1.48H5.21L4.27 2H1v2h2l3.6 7.59-1.35 2.45C4.52 14.37 5.48 16 7 16h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L7.16 14z" />
-            </svg>
-            <button class="bg-[#8B4513] text-white font-semibold w-24 px-4 py-2 rounded-full flex justify-center text-center space-x-2 border border-black hover:bg-[#556B2F] hover:text-white">
-                <span>Login</span>
-            </button>
-        </div>
     </nav>
 
     <!-- Hero Section -->

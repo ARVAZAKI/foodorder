@@ -363,7 +363,7 @@
                     <p><strong>Total:</strong> <span id="successTotalPrice"></span></p>
                     <p class="mt-4"><strong>QR Code:</strong></p>
                     <img id="successQrCode" src="" alt="QR Code" class="mx-auto mt-2 w-40 h-40">
-                    <p class="text-sm text-gray-500 mt-2">Scan kode QR ini di halaman "Daftar Pesanan" untuk melihat detail pesanan.</p>
+                    <p class="text-sm text-gray-500 mt-2">Simpan kode QR ini untuk mengambil pesanan di kasir</p>
                 </div>
                 <button id="successOkBtn" class="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-xl font-medium">
                     OK
@@ -640,15 +640,10 @@
                 console.log('Memanggil snap.pay dengan token:', result.snap_token);
                 snap.pay(result.snap_token, {
                     onSuccess: function(result) {
-                        console.log('Pembayaran berhasil:', result);
-                        if (!result.order_id) {
-                            showSuccessToast('Order ID tidak ditemukan, hubungi dukungan.');
-                            console.error('Missing order_id:', result);
-                            return;
-                        }
-                        // Show success popup with QR code
-                        showSuccessPopup(result.transaction, result.qr_url);
-                    },
+        console.log('Pembayaran berhasil:', result);
+        window.lastTransactionResponse = result;
+        showSuccessPopup(result); // Pass just the result object
+    },
                     onPending: function(result) {
                         console.log('Pembayaran tertunda:', result);
                         showSuccessToast('Pembayaran tertunda, silakan selesaikan pembayaran.');
@@ -900,19 +895,14 @@
                 console.log('Memanggil snap.pay dengan token:', result.snap_token);
                 snap.pay(result.snap_token, {
                     onSuccess: function(result) {
-                        console.log('Pembayaran berhasil:', result);
-                        if (!result.order_id) {
-                            showSuccessToast('Order ID tidak ditemukan, hubungi dukungan.');
-                            console.error('Missing order_id:', result);
-                            return;
-                        }
-                        // Show success popup with QR code
-                        showSuccessPopup(result.transaction, result.qr_url);
-                        // Clear cart
-                        cart = [];
-                        customerName.value = '';
-                        updateCart();
-                    },
+        console.log('Pembayaran berhasil:', result);
+        window.lastTransactionResponse = result;
+        showSuccessPopup(result); // Pass just the result object
+        // Clear cart
+        cart = [];
+        customerName.value = '';
+        updateCart();
+    },
                     onPending: function(result) {
                         console.log('Pembayaran tertunda:', result);
                         showSuccessToast('Pembayaran tertunda, silakan selesaikan pembayaran.');
@@ -976,12 +966,35 @@
             });
         });
 
-        function showSuccessPopup(transaction, qrUrl) {
-    console.log('Menampilkan popup sukses:', { transaction, qrUrl });
-    successTransactionCode.textContent = transaction.transaction_code;
-    successCustomerName.textContent = transaction.name;
-    successTotalPrice.textContent = `Rp${transaction.total_price.toLocaleString('id-ID')}`;
-    successQrCode.src = qrUrl;
+        // Perbaiki fungsi showSuccessPopup
+        // Replace your current showSuccessPopup function with this:
+function showSuccessPopup(result) {
+    console.log('Menampilkan popup sukses dengan data:', result);
+    
+    // Make sure result is defined before proceeding
+    if (!result) {
+        console.error('Data transaksi kosong');
+        showSuccessToast('Terjadi kesalahan saat memproses transaksi');
+        return;
+    }
+    
+    // Handle different data structures that might be passed
+    const orderId = result.order_id || '';
+    const customerNameValue = customerName.value || modalCustomerName.value || '';
+    const amount = result.gross_amount || 0;
+    
+    successTransactionCode.textContent = orderId;
+    successCustomerName.textContent = customerNameValue;
+    successTotalPrice.textContent = `Rp${parseInt(amount).toLocaleString('id-ID')}`;
+    
+    // Handle QR code image
+    if (result.qr_url) {
+        successQrCode.src = result.qr_url;
+    } else {
+        // Fall back to a generated URL if qr_url is not available
+        successQrCode.src = `/storage/qrcodes/${orderId}.png`; // Placeholder image
+    }
+    
     successPopup.classList.remove('hidden');
 }
 

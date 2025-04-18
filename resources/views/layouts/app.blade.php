@@ -293,7 +293,7 @@
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="/dashboard">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Orders</span>
                 </a>

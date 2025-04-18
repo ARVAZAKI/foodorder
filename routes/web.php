@@ -17,23 +17,12 @@ Route::get('/about-us', function () {
 Route::get('/tes', function () {
     return view('tes');
 });
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::resource('/products', ItemController::class);
-Route::resource('/categories', CategoryController::class);
+Route::resource('/products', ItemController::class)->middleware(['auth']);
+Route::resource('/categories', CategoryController::class)->middleware(['auth']);
 Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
-Route::get('/order', [OrderController::class, 'index'])->name('order.index');
-
+Route::get('/dashboard', [OrderController::class, 'index'])->middleware(['auth'])->name('dashboard');
+Route::get('/order-detail/{id}', [OrderController::class, 'show'])->middleware(['auth'])->name('order.show');
 // Midtrans Routes
 Route::post('/midtrans/notification', [TransactionController::class, 'notificationHandler'])->name('midtrans.notification');
 Route::get('/midtrans/complete', [TransactionController::class, 'completePayment'])->name('midtrans.complete');
@@ -43,5 +32,7 @@ Route::get('/transactions/verify', function () {
     return view('transactions.verify_form');
 })->name('transactions.verify_form');
 Route::post('/transactions/verify', [TransactionController::class, 'verifyTransaction'])->name('transactions.verify');
+
+Route::post('midtrans/notification', [App\Http\Controllers\TransactionController::class, 'handleNotification']);
 
 require __DIR__.'/auth.php';

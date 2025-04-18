@@ -46,16 +46,19 @@
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">Kode Transaksi</th>
+                                    <th scope="col">Nama</th>
                                     <th scope="col">Item</th>
                                     <th scope="col">Total Harga</th>
                                     <th scope="col">Status Pembayaran</th>
+                                    <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($transactions as $index => $transaction)
                                 <tr data-transaction-code="{{ $transaction->transaction_code }}">
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ ($transactions->currentPage() - 1) * $transactions->perPage() + $index + 1 }}</td>
                                     <td>{{ $transaction->transaction_code }}</td>
+                                    <td>{{ $transaction->name }}</td>
                                     <td>
                                         <ul class="list-unstyled mb-0">
                                         @foreach($transaction->cart as $cart)
@@ -65,22 +68,55 @@
                                     </td>
                                     <td>Rp {{ number_format($transaction->total_price, 0, ',', '.') }}</td>
                                     <td>
-                                        @if($transaction->payment_status == 'paid')
-                                            <span class="badge bg-success">Dibayar</span>
-                                        @elseif($transaction->payment_status == 'pending')
-                                            <span class="badge bg-warning">Pending</span>
-                                        @else
-                                            <span class="badge bg-danger">Belum Dibayar</span>
-                                        @endif
+                                        <span class="badge bg-{{ $paymentStatusBadges[$transaction->payment_status] }}">
+                                            {{ $paymentStatusLabels[$transaction->payment_status] }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('order.show', $transaction->id) }}" class="btn btn-sm btn-info">Detail</a>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">Tidak ada data pesanan</td>
+                                    <td colspan="7" class="text-center">Tidak ada data pesanan</td>
                                 </tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center mt-4" id="pagination-container">
+                        <div class="text-center">
+                            @if ($transactions->lastPage() > 1)
+                                <div class="d-flex justify-content-between align-items-center">
+                                    {{ $transactions->firstItem() }} to {{ $transactions->lastItem() }} of {{ $transactions->total() }} results
+                                </div>
+                                
+                                <div class="d-inline-flex mt-3">
+                                    @if ($transactions->onFirstPage())
+                                        <span class="btn btn-outline-secondary disabled">« Previous</span>
+                                    @else
+                                        <a href="{{ $transactions->previousPageUrl() }}" class="btn btn-outline-secondary">« Previous</a>
+                                    @endif
+                                    
+                                    <div class="mx-2 d-flex">
+                                        @for ($i = 1; $i <= $transactions->lastPage(); $i++)
+                                            @if ($i == $transactions->currentPage())
+                                                <span class="btn btn-outline-primary active">{{ $i }}</span>
+                                            @else
+                                                <a href="{{ $transactions->url($i) }}" class="btn btn-outline-secondary">{{ $i }}</a>
+                                            @endif
+                                        @endfor
+                                    </div>
+                                    
+                                    @if ($transactions->hasMorePages())
+                                        <a href="{{ $transactions->nextPageUrl() }}" class="btn btn-outline-primary">Next »</a>
+                                    @else
+                                        <span class="btn btn-outline-secondary disabled">Next »</span>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,10 +124,11 @@
     </div>
 </div>
 @endsection
+
 @section('script')
 <script src="https://unpkg.com/html5-qrcode@2.3.4/html5-qrcode.min.js"></script>
 <script>
-      document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () {
     let html5QrCode = null;
     let isScanning = false;
     const qrReader = document.getElementById('qr-reader');
@@ -99,23 +136,26 @@
     const startButton = document.getElementById('startButton');
     const searchCode = document.getElementById('searchCode');
     const searchButton = document.getElementById('searchButton');
+    const paginationContainer = document.getElementById('pagination-container');
 
     // Inisialisasi scanner dengan pendekatan yang berbeda
     async function initializeScanner() {
-        html5QrCode = new Html5Qrcode("qr-reader", { 
-            verbose: false,
-            experimentalFeatures: {
-                useBarCodeDetectorIfSupported: true // Menggunakan Barcode Detection API jika tersedia
-            }
-        });
+        if (html5QrCode === null) {
+            html5QrCode = new Html5Qrcode("qr-reader", { 
+                verbose: false,
+                experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true // Menggunakan Barcode Detection API jika tersedia
+                }
+            });
+        }
         
         try {
             const cameras = await Html5Qrcode.getCameras();
             if (cameras && cameras.length) {
                 // Menggunakan kamera belakang jika tersedia
                 const rearCamera = cameras.find(camera => camera.label.toLowerCase().includes('back') || 
-                                                        camera.label.toLowerCase().includes('rear') ||
-                                                        camera.label.toLowerCase().includes('belakang'));
+                                                      camera.label.toLowerCase().includes('rear') ||
+                                                      camera.label.toLowerCase().includes('belakang'));
                 
                 const cameraId = rearCamera ? rearCamera.id : cameras[0].id;
                 
@@ -187,6 +227,24 @@
         }
     }
 
+    // Reset search results and show all transactions
+    function resetSearch() {
+        const rows = document.querySelectorAll('#transactionTable tbody tr');
+        rows.forEach(row => {
+            row.classList.remove('table-primary');
+            row.style.display = '';
+        });
+        qrReaderResults.innerHTML = '';
+        
+        // Show pagination again after reset
+        if (paginationContainer) {
+            paginationContainer.style.display = '';
+        }
+        
+        // Reload the page to restore original pagination state
+        window.location.reload();
+    }
+
     // Event listener untuk tombol start
     startButton.addEventListener('click', async function() {
         if (isScanning) {
@@ -201,6 +259,16 @@
         }
     });
 
+    // Add button to reset search results
+    const resetButton = document.createElement('button');
+    resetButton.className = 'btn btn-secondary ms-2';
+    resetButton.textContent = 'Reset Pencarian';
+    resetButton.addEventListener('click', function() {
+        resetSearch();
+        searchCode.value = '';
+    });
+    searchButton.parentNode.appendChild(resetButton);
+
     searchButton.addEventListener('click', function () {
         const code = searchCode.value.trim();
         if (code) {
@@ -213,11 +281,16 @@
     function searchTransaction(code) {
         const rows = document.querySelectorAll('#transactionTable tbody tr');
         let found = false;
+        
+        // First, show all rows to ensure we're searching through everything
+        rows.forEach(row => {
+            row.style.display = '';
+            row.classList.remove('table-primary');
+        });
 
         rows.forEach(row => {
             const transactionCode = row.getAttribute('data-transaction-code');
             if (!transactionCode) {
-                row.style.display = '';
                 return;
             }
 
@@ -227,10 +300,14 @@
                 row.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 found = true;
             } else {
-                row.classList.remove('table-primary');
                 row.style.display = 'none';
             }
         });
+        
+        // Hide pagination during search results
+        if (paginationContainer) {
+            paginationContainer.style.display = 'none';
+        }
 
         qrReaderResults.innerHTML = found
             ? `<div class="alert alert-success">Transaksi dengan kode "${code}" ditemukan</div>`
