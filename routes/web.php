@@ -32,4 +32,5 @@ Route::resource('/categories', CategoryController::class);
 Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 Route::get('/order', [OrderController::class, "index"]);
+Route::post('/midtrans/callback', [TransactionController::class, 'callback'])->name('midtrans.callback');
 require __DIR__.'/auth.php';
