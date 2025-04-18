@@ -13,7 +13,7 @@ class OrderController extends Controller
         
         // Load transaction dengan relationship cart dan item
         $transactions = Transaction::with('cart.item')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'desc')->where('payment_status', 'paid')
             ->paginate(10);
         
         // Siapkan status pembayaran untuk tampilan
