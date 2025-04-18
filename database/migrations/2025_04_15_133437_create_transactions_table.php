@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('transaction_code');
-            $table->string('qr_image');
             $table->bigInteger('total_price');
             $table->string('payment_status')->default('unpaid');
             $table->timestamps();

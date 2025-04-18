@@ -9,7 +9,6 @@ class Transaction extends Model
     protected $fillable = [
         'name',
         'transaction_code',
-        'qr_image',
         'total_price',
         'payment_status',
     ];

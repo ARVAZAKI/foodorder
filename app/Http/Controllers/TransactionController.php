@@ -35,19 +35,8 @@ class TransactionController extends Controller
         $transaction = Transaction::create([
             'name' => $request->name,
             'transaction_code' => $transactionCode,
-            'qr_image' => '',
             'total_price' => $totalPrice,
             'payment_status' => 'pending',
-        ]);
-
-        // Generate QR code (format SVG)
-        $qrSvg = QrCode::format('svg')->size(300)->generate($transactionCode);
-        $qrImageName = 'qrcodes/' . $transactionCode . '.svg';
-        Storage::disk('public')->put($qrImageName, $qrSvg);
-
-        // Update transaksi dengan path QR code
-        $transaction->update([
-            'qr_image' => $qrImageName,
         ]);
 
         // Simpan cart
