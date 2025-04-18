@@ -326,6 +326,12 @@
     <!-- Cart Sheet -->
     <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
         <div id="cartSheet" class="bg-white rounded-t-2xl absolute bottom-0 left-0 right-0 max-h-[80vh] overflow-y-auto transform transition-transform duration-300">
+            <div class="px-4 py-3 border-b">
+                <div class="mb-3">
+                    <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">Nama Pemesan</label>
+                    <input type="text" id="customerName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Masukkan nama Anda">
+                </div>
+            </div>
             <div class="sticky top-0 bg-white pt-4 pb-3 px-4 border-b">
                 <div class="w-12 h-1 bg-gray-300 rounded-full mx-auto mb-4"></div>
                 <div class="flex justify-between items-center">
@@ -418,7 +424,8 @@
         const listViewBtn = document.getElementById('listViewBtn');
         const gridView = document.getElementById('gridView');
         const listView = document.getElementById('listView');
-        
+        const customerName = document.getElementById('customerName');
+
         let cart = [];
         let currentDetailItem = null;
         let detailQty = 1;
@@ -774,20 +781,30 @@
         
         // Simulate loading on checkout
         checkoutBtn.addEventListener('click', () => {
-            loadingIndicator.classList.remove('hidden');
-            
-            setTimeout(() => {
-                loadingIndicator.classList.add('hidden');
-                closeCart();
-                
-                // Clear cart
-                cart = [];
-                updateCart();
-                
-                // Show order success message
-                showSuccessToast('Pesanan berhasil dibuat!');
-            }, 2000);
-        });
+    // Validasi nama
+    if (!customerName.value.trim()) {
+        showSuccessToast('Harap masukkan nama Anda!');
+        customerName.focus();
+        return;
+    }
+    
+    loadingIndicator.classList.remove('hidden');
+    
+    setTimeout(() => {
+        loadingIndicator.classList.add('hidden');
+        closeCart();
+        
+        // Clear cart
+        cart = [];
+        updateCart();
+        
+        // Show order success message with name
+        showSuccessToast(`Pesanan ${customerName.value} berhasil dibuat!`);
+        
+        // Reset nama
+        customerName.value = '';
+    }, 2000);
+});
         
         // Initialize cart
         updateCart();
