@@ -233,17 +233,15 @@
                     </div>
                     <div class="flex items-center mt-1 mb-1">
                         <div class="rating text-xs text-yellow-400">
-                            @for($i = 1; $i <= 5; $i++)
-                                @if($i <= rand(4, 5))
-                                    <i class="fas fa-star"></i>
-                                @elseif($i - 0.5 <= rand(3, 5))
-                                    <i class="fas fa-star-half-alt"></i>
-                                @else
-                                    <i class="far fa-star"></i>
-                                @endif
+                            {{-- 4 full stars --}}
+                            @for ($i = 0; $i < 4; $i++)
+                                <i class="fas fa-star"></i>
                             @endfor
+                        
+                            {{-- 1 half star --}}
+                            <i class="fas fa-star-half-alt"></i>
                         </div>
-                        <span class="text-xs text-gray-500 ml-1">{{ number_format(rand(35, 49) / 10, 1) }} ({{ rand(40, 200) }})</span>
+                        
                     </div>
                     <p class="text-gray-500 text-xs mt-1 line-clamp-2">{{ $item->description }}</p>
                 </div>
@@ -271,7 +269,7 @@
 <div id="foodDetailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div class="relative">
-            <img src="/api/placeholder/400/250" alt="Food Detail" id="foodDetailImage" class="w-full h-48 object-cover rounded-t-2xl">
+            <img src="" alt="Food Detail" id="foodDetailImage" class="w-full h-48 object-cover rounded-t-2xl">
             <button id="closeDetailBtn" class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md text-gray-700 hover:text-gray-900">
                 <i class="fas fa-times"></i>
             </button>
@@ -293,22 +291,11 @@
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star-half-alt"></i>
                 </div>
-                <span class="text-sm text-gray-500 ml-1">4.5 (120 ulasan)</span>
             </div>
             
             <div class="mt-4">
                 <h3 class="font-semibold text-gray-800">Deskripsi</h3>
                 <p class="text-gray-600 text-sm mt-1" id="foodDetailDescription"></p>
-            </div>
-            
-            <div class="mt-4">
-                <h3 class="font-semibold text-gray-800">Pilihan Level Pedas</h3>
-                <div class="flex space-x-2 mt-2">
-                    <button class="spice-level-btn border px-3 py-1 rounded-full text-sm hover:bg-orange-50 active:bg-orange-100">Tidak Pedas</button>
-                    <button class="spice-level-btn border px-3 py-1 rounded-full text-sm hover:bg-orange-50 active:bg-orange-100">Sedang</button>
-                    <button class="spice-level-btn border px-3 py-1 rounded-full text-sm hover:bg-orange-50 active:bg-orange-100">Pedas</button>
-                    <button class="spice-level-btn border px-3 py-1 rounded-full text-sm hover:bg-orange-50 active:bg-orange-100">Sangat Pedas</button>
-                </div>
             </div>
             
             <div class="mt-6 flex justify-between items-center">
@@ -328,8 +315,8 @@
             </div>
             
             <div class="mt-6">
-                <button id="addToCartDetail" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-lg flex items-center justify-center">
-                    <i class="fas fa-shopping-cart mr-2"></i> Tambahkan ke Keranjang
+                <button id="addToCartDetail" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 md:py-3 rounded-xl font-medium md:font-bold text-base md:text-lg flex items-center justify-center">
+                    <i class="fas fa-shopping-cart mr-1 md:mr-2 text-sm md:text-base"></i> Tambahkan ke Keranjang
                 </button>
             </div>
         </div>
@@ -501,19 +488,32 @@
         
         // Food detail modal functions
         function openFoodDetail(item) {
-            const id = item.querySelector('.add-to-cart').getAttribute('data-id');
-            const name = item.querySelector('.add-to-cart').getAttribute('data-name');
-            const price = item.querySelector('.add-to-cart').getAttribute('data-price');
-            const formattedPrice = `Rp${parseInt(price).toLocaleString('id-ID')}`;
-            
-            currentDetailItem = { id, name, price };
-            foodDetailTitle.textContent = name;
-            foodDetailPrice.textContent = formattedPrice;
-            detailQuantity.textContent = '1';
-            detailQty = 1;
-            
-            foodDetailModal.classList.remove('hidden');
-        }
+    const id = item.querySelector('.add-to-cart').getAttribute('data-id');
+    const name = item.querySelector('.add-to-cart').getAttribute('data-name');
+    const price = item.querySelector('.add-to-cart').getAttribute('data-price');
+    const formattedPrice = `Rp${parseInt(price).toLocaleString('id-ID')}`;
+    
+    // Ambil gambar dari item yang diklik
+    const image = item.querySelector('img').src;
+    
+    // Ambil deskripsi dari item yang diklik
+    const description = item.querySelector('.text-gray-500.text-xs.mt-1.line-clamp-2, .text-gray-500.text-xs.mt-1').textContent;
+    
+    currentDetailItem = { id, name, price };
+    foodDetailTitle.textContent = name;
+    foodDetailPrice.textContent = formattedPrice;
+    
+    // Set gambar yang sesuai dengan item yang diklik
+    document.getElementById('foodDetailImage').src = image;
+    
+    // Set deskripsi yang sesuai dengan item yang diklik
+    document.getElementById('foodDetailDescription').textContent = description;
+    
+    detailQuantity.textContent = '1';
+    detailQty = 1;
+    
+    foodDetailModal.classList.remove('hidden');
+}
         
         closeDetailBtn.addEventListener('click', () => {
             foodDetailModal.classList.add('hidden');

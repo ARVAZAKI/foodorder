@@ -23,7 +23,7 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th scope="col">ID</th>
+                                    <th scope="col">#</th>
                                     <th scope="col">Nama</th>
                                     <th scope="col">Aksi</th>
                                 </tr>
@@ -31,15 +31,13 @@
                             <tbody>
                                 @forelse ($categories as $category)
                                     <tr>
-                                        <th scope="row">{{ $category->id }}</th>
+                                        <th scope="row">{{ $loop->iteration }}</th>
                                         <td>{{ $category->name }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <button type="button" class="btn btn-sm btn-warning edit-category" 
+                                                <button type="button" class="btn btn-sm btn-warning" 
                                                     data-bs-toggle="modal" 
-                                                    data-bs-target="#editCategoryModal"
-                                                    data-id="{{ $category->id }}"
-                                                    data-name="{{ $category->name }}">
+                                                    data-bs-target="#editCategoryModal{{ $category->id }}">
                                                     Edit
                                                 </button>
                                                 <form action="{{ route('categories.destroy', $category->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori ini?')">
@@ -50,6 +48,32 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    
+                                    <!-- Edit Category Modal for each category -->
+                                    <div class="modal fade" id="editCategoryModal{{ $category->id }}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{ $category->id }}" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editCategoryModalLabel{{ $category->id }}">Edit Kategori</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ route('categories.update', $category->id) }}" method="POST">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="edit_name{{ $category->id }}" class="form-label">Nama Kategori</label>
+                                                            <input type="text" class="form-control" id="edit_name{{ $category->id }}" name="name" value="{{ $category->name }}" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                        <button type="submit" class="btn btn-primary">Perbarui</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @empty
                                     <tr>
                                         <td colspan="3" class="text-center">Tidak ada data kategori</td>
@@ -91,52 +115,4 @@
         </div>
     </div>
 </div>
-
-<!-- Edit Category Modal -->
-<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editCategoryModalLabel">Edit Kategori</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editCategoryForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="edit_name" class="form-label">Nama Kategori</label>
-                        <input type="text" class="form-control" id="edit_name" name="name" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Perbarui</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const editModal = document.getElementById('editCategoryModal');
-        const editForm = document.getElementById('editCategoryForm');
-
-        document.querySelectorAll('.edit-category').forEach(button => {
-            button.addEventListener('click', function () {
-                const id = this.getAttribute('data-id');
-                const name = this.getAttribute('data-name');
-
-                // Set form action
-                editForm.action = `/categories/${id}`;
-
-                // Set form values
-                document.getElementById('edit_name').value = name;
-            });
-        });
-    });
-</script>
 @endsection

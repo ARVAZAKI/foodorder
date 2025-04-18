@@ -33,6 +33,7 @@ class TransactionController extends Controller
 
         // Simpan transaksi terlebih dahulu tanpa QR
         $transaction = Transaction::create([
+            'name' => $request->name,
             'transaction_code' => $transactionCode,
             'qr_image' => '', // Placeholder
             'total_price' => $totalPrice,

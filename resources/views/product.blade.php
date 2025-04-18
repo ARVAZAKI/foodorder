@@ -23,7 +23,7 @@
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
-                                    <th scope="col">ID</th>
+                                    <th scope="col">#</th>
                                     <th scope="col">Gambar</th>
                                     <th scope="col">Nama</th>
                                     <th scope="col">Kategori</th>
@@ -34,7 +34,7 @@
                             <tbody>
                                 @forelse ($products as $product)
                                     <tr>
-                                        <th scope="row">{{ $product->id }}</th>
+                                        <th scope="row">{{ $loop->iteration }}</th>
                                         <td>
                                             @if($product->item_image)
                                                 <img src="{{ asset('storage/' . $product->item_image) }}" 
@@ -50,17 +50,11 @@
                                         <td>Rp {{ number_format($product->price, 0, ',', '.') }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                {{-- <button type="button" class="btn btn-sm btn-warning edit-product" 
+                                                <button type="button" class="btn btn-sm btn-warning me-2" 
                                                     data-bs-toggle="modal" 
-                                                    data-bs-target="#editProductModal"
-                                                    data-id="{{ $product->id }}"
-                                                    data-name="{{ $product->name }}"
-                                                    data-price="{{ $product->price }}"
-                                                    data-description="{{ $product->description }}"
-                                                    data-category="{{ $product->category_id }}"
-                                                    data-image="{{ $product->item_image }}">
+                                                    data-bs-target="#editProductModal{{ $product->id }}">
                                                     Edit
-                                                </button> --}}
+                                                </button>
                                                 <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?')">
                                                     @csrf
                                                     @method('DELETE')
@@ -69,6 +63,70 @@
                                             </div>
                                         </td>
                                     </tr>
+                                    
+                                    <!-- Edit Product Modal for each product -->
+                                    <div class="modal fade" id="editProductModal{{ $product->id }}" tabindex="-1" aria-labelledby="editProductModalLabel{{ $product->id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editProductModalLabel{{ $product->id }}">Edit Produk</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ route('products.update', $product->id) }}" method="POST" enctype="multipart/form-data">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label for="edit_name{{ $product->id }}" class="form-label">Nama Produk</label>
+                                                            <input type="text" class="form-control" id="edit_name{{ $product->id }}" name="name" value="{{ $product->name }}" required>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="edit_category_id{{ $product->id }}" class="form-label">Kategori</label>
+                                                            <select class="form-select" id="edit_category_id{{ $product->id }}" name="category_id" required>
+                                                                <option value="">Pilih Kategori</option>
+                                                                @foreach ($categories as $category)
+                                                                    <option value="{{ $category->id }}" {{ $product->category_id == $category->id ? 'selected' : '' }}>
+                                                                        {{ $category->name }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="edit_price{{ $product->id }}" class="form-label">Harga (Rp)</label>
+                                                            <input type="number" class="form-control" id="edit_price{{ $product->id }}" name="price" value="{{ $product->price }}" required>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="edit_description{{ $product->id }}" class="form-label">Deskripsi</label>
+                                                            <textarea class="form-control" id="edit_description{{ $product->id }}" name="description" rows="3" required>{{ $product->description }}</textarea>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="edit_item_image{{ $product->id }}" class="form-label">Gambar Produk</label>
+                                                            <div class="mb-2">
+                                                                @if($product->item_image)
+                                                                    <img src="{{ asset('storage/' . $product->item_image) }}" 
+                                                                        alt="Current image" 
+                                                                        style="height: 100px;" 
+                                                                        class="img-thumbnail">
+                                                                @else
+                                                                    <span class="badge bg-secondary">No Image</span>
+                                                                @endif
+                                                            </div>
+                                                            <input type="file" class="form-control" id="edit_item_image{{ $product->id }}" name="item_image" accept="image/*">
+                                                            <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar.</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                        <button type="submit" class="btn btn-primary">Perbarui</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center">Tidak ada data produk</td>
@@ -150,95 +208,4 @@
         </div>
     </div>
 </div>
-
-<!-- Edit Product Modal -->
-<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editProductModalLabel">Edit Produk</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editProductForm" method="POST" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <input type="hidden" id="edit_id">
-                    <div class="mb-3">
-                        <label for="edit_name" class="form-label">Nama Produk</label>
-                        <input type="text" class="form-control" id="edit_name" name="name" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="edit_category_id" class="form-label">Kategori</label>
-                        <select class="form-select" id="edit_category_id" name="category_id" required>
-                            <option value="">Pilih Kategori</option>
-                            @foreach ($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="edit_price" class="form-label">Harga (Rp)</label>
-                        <input type="number" class="form-control" id="edit_price" name="price" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="edit_description" class="form-label">Deskripsi</label>
-                        <textarea class="form-control" id="edit_description" name="description" rows="3" required></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="edit_item_image" class="form-label">Gambar Produk</label>
-                        <div id="edit_current_image" class="mb-2"></div>
-                        <input type="file" class="form-control" id="edit_item_image" name="item_image" accept="image/*">
-                        <small class="text-muted">Kosongkan jika tidak ingin mengubah gambar.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Perbarui</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-@endsection
-
-@section('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const editModal = document.getElementById('editProductModal');
-        const editForm = document.getElementById('editProductForm');
-
-        document.querySelectorAll('.edit-product').forEach(button => {
-            button.addEventListener('click', function () {
-                const id = this.getAttribute('data-id');
-                const name = this.getAttribute('data-name');
-                const price = this.getAttribute('data-price');
-                const description = this.getAttribute('data-description');
-                const categoryId = this.getAttribute('data-category');
-                const image = this.getAttribute('data-image');
-
-                // Set form action
-                editForm.action = `/products/${id}`;
-
-                // Set form values
-                document.getElementById('edit_name').value = name;
-                document.getElementById('edit_price').value = price;
-                document.getElementById('edit_description').value = description;
-                document.getElementById('edit_category_id').value = categoryId;
-
-                const imageContainer = document.getElementById('edit_current_image');
-                if (image) {
-                    imageContainer.innerHTML = `<img src="/storage/${image}" class="img-thumbnail" style="max-height: 200px;">`;
-                } else {
-                    imageContainer.innerHTML = '<span class="text-muted">Tidak ada gambar</span>';
-                }
-            });
-        });
-    });
-</script>
 @endsection

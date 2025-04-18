@@ -307,10 +307,6 @@
             </li>
         </ul>
         
-        <div class="user-info">
-            <img src="/api/placeholder/40/40" alt="Profile Picture">
-            <span class="user-name">Admin User</span>
-        </div>
     </nav>
     
     <!-- Main Content -->
@@ -325,7 +321,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom Script -->
-    <script>yield('script')</script>
+    @yield('script')
     <script>
         $(document).ready(function() {
             // Toggle sidebar

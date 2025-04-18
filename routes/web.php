@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
@@ -30,4 +31,5 @@ Route::resource('/products', ItemController::class);
 Route::resource('/categories', CategoryController::class);
 Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
 Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
+Route::get('/order', [OrderController::class, "index"]);
 require __DIR__.'/auth.php';

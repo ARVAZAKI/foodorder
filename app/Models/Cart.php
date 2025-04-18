@@ -21,6 +21,7 @@ class Cart extends Model
     {
         return $this->belongsTo(Transaction::class, 'transaction_id', 'id');
     }
+
     public function item()
     {
         return $this->belongsTo(Item::class, 'item_id', 'id');
