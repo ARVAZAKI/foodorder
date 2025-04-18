@@ -9,12 +9,12 @@ use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 
-
 class TransactionController extends Controller
 {
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:items,id',
             'items.*.quantity' => 'required|integer|min:1',
@@ -28,34 +28,29 @@ class TransactionController extends Controller
             $totalPrice += $item->price * $itemInput['quantity'];
         }
 
-        // Generate kode transaksi random 5 huruf kapital
+        // Generate kode transaksi
         $transactionCode = Str::upper(Str::random(5));
 
-        // Simpan transaksi terlebih dahulu tanpa QR
+        // Simpan transaksi awal (tanpa QR)
         $transaction = Transaction::create([
             'name' => $request->name,
             'transaction_code' => $transactionCode,
-            'qr_image' => '', // Placeholder
+            'qr_image' => '',
             'total_price' => $totalPrice,
             'payment_status' => 'pending',
         ]);
 
-        // Generate QR code image dari kode transaksi
+        // Generate QR code (format SVG)
         $qrSvg = QrCode::format('svg')->size(300)->generate($transactionCode);
-        
-        // Simpan QR image ke storage (misalnya: storage/app/public/qrcodes/)
-        $qrImageName = 'qrcodes/' . $transactionCode . '.png';
-        Storage::disk('public')->put('qrcodes/' . $transactionCode . '.svg', $qrSvg);
+        $qrImageName = 'qrcodes/' . $transactionCode . '.svg';
+        Storage::disk('public')->put($qrImageName, $qrSvg);
 
-        
-
-        // Update transaksi dengan path qr_image
+        // Update transaksi dengan path QR code
         $transaction->update([
             'qr_image' => $qrImageName,
         ]);
 
-
-        // Simpan semua cart
+        // Simpan cart
         foreach ($request->items as $itemInput) {
             Cart::create([
                 'item_id' => $itemInput['item_id'],

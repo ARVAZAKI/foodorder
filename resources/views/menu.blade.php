@@ -6,6 +6,18 @@
     <title>RasaNusantara - Pesan Makanan Online</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ asset('js/qrcode.min.js') }}" onload="console.log('qrcode.min.js loaded successfully')" onerror="console.error('Failed to load qrcode.min.js from local')"></script>
+    <script>
+        // Fallback to CDN if local file fails
+        if (typeof QRCode === 'undefined') {
+            console.warn('QRCode not loaded from local, attempting CDN fallback');
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/qrcodejs@1.0.0/qrcode.min.js';
+            script.onload = () => console.log('qrcode.min.js loaded from CDN');
+            script.onerror = () => console.error('Failed to load qrcode.min.js from CDN');
+            document.head.appendChild(script);
+        }
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
         
@@ -368,6 +380,28 @@
         </div>
     </div>
 
+    <div id="qrCodeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Scan QR Code untuk Pembayaran</h2>
+                <button id="closeQrModalBtn" class="text-gray-500 hover:text-gray-700 p-1">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="qrCode" class="flex justify-center mb-4"></div>
+            <div id="qrError" class="error-message hidden">Gagal menghasilkan QR code. Silakan coba lagi.</div>
+            <p class="text-gray-600 text-sm text-center mb-4">Scan kode ini untuk menyelesaikan pembayaran Anda.</p>
+            <div class="flex justify-between items-center">
+                <p class="text-gray-500 text-sm">Total Pembayaran</p>
+                <p id="qrTotalAmount" class="text-orange-600 font-bold text-lg"></p>
+            </div>
+            <button id="confirmPaymentBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-lg mt-4 flex justify-center items-center">
+                Konfirmasi Pembayaran
+                <i class="fas fa-check ml-2"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- Order Success Toast -->
     <div id="successToast" class="fixed bottom-20 left-0 right-0 flex justify-center hidden">
         <div class="bg-green-500 text-white px-5 py-3 rounded-full shadow-lg flex items-center success-toast">
@@ -390,6 +424,11 @@
     </div>
 
     <script>
+        // Check if QRCode library is loaded
+        window.addEventListener('load', () => {
+            console.log('QRCode library loaded:', typeof QRCode !== 'undefined');
+        });
+
         // Cart functionality
         const cartButton = document.getElementById('cartButton');
         const cartModal = document.getElementById('cartModal');
@@ -398,8 +437,6 @@
         const cartItems = document.getElementById('cartItems');
         const cartTotal = document.getElementById('cartTotal');
         const subtotalAmount = document.getElementById('subtotalAmount');
-        const taxAmount = document.getElementById('taxAmount');
-        const deliveryFee = document.getElementById('deliveryFee');
         const cartCount = document.getElementById('cartCount');
         const checkoutBtn = document.getElementById('checkoutBtn');
         const emptyCartMessage = document.getElementById('emptyCartMessage');
@@ -418,6 +455,12 @@
         const listViewBtn = document.getElementById('listViewBtn');
         const gridView = document.getElementById('gridView');
         const listView = document.getElementById('listView');
+        const qrCodeModal = document.getElementById('qrCodeModal');
+        const closeQrModalBtn = document.getElementById('closeQrModalBtn');
+        const qrCodeContainer = document.getElementById('qrCode');
+        const qrTotalAmount = document.getElementById('qrTotalAmount');
+        const confirmPaymentBtn = document.getElementById('confirmPaymentBtn');
+        const qrError = document.getElementById('qrError');
         
         let cart = [];
         let currentDetailItem = null;
@@ -441,79 +484,76 @@
             gridViewBtn.classList.remove('bg-orange-100', 'text-orange-500');
             gridViewBtn.classList.add('text-gray-400');
             
-            // Populate list view if empty
             if (listView.children.length === 0) {
                 populateListView();
             }
         });
         
         function populateListView() {
-            // Clone food items to list view in a more compact format
-            const foodItems = document.querySelectorAll('.food-item');
+            listView.innerHTML = '';
+            const foodItems = document.querySelectorAll('.food-item:not(.hidden)');
+            
             foodItems.forEach(item => {
-                const img = item.querySelector('img').src;
-                const title = item.querySelector('h3').textContent;
-                const price = item.querySelector('.text-orange-600').textContent;
-                const description = item.querySelector('.text-gray-500.text-xs.mt-1').textContent;
-                const id = item.querySelector('.add-to-cart').getAttribute('data-id');
-                const dataName = item.querySelector('.add-to-cart').getAttribute('data-name');
-                const dataPrice = item.querySelector('.add-to-cart').getAttribute('data-price');
-                
-                const listItem = document.createElement('div');
-                listItem.className = 'food-item bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition';
-                listItem.innerHTML = `
-                    <div class="flex items-center p-3">
-                        <img src="${img}" alt="${title}" class="w-16 h-16 object-cover rounded-lg">
-                        <div class="ml-3 flex-1">
-                            <h3 class="font-semibold">${title}</h3>
-                            <p class="text-xs text-gray-500 line-clamp-1">${description}</p>
-                            <div class="flex justify-between items-center mt-1">
-                                <span class="text-orange-600 font-bold">${price}</span>
-                                <button class="add-to-cart btn-add bg-orange-500 hover:bg-orange-600 text-white py-1 px-2 rounded-full text-xs" data-id="${id}" data-name="${dataName}" data-price="${dataPrice}">
-                                    + Tambah
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
+                const listItem = createListViewItem(item);
                 listView.appendChild(listItem);
             });
             
-            // Add event listeners to newly created buttons
             listView.querySelectorAll('.add-to-cart').forEach(button => {
                 button.addEventListener('click', handleAddToCart);
             });
         }
         
-        // Food detail modal functions
+        function createListViewItem(item) {
+            const img = item.querySelector('img').src;
+            const title = item.querySelector('h3').textContent;
+            const price = item.querySelector('.text-orange-600').textContent;
+            const description = item.querySelector('.text-gray-500.text-xs.mt-1').textContent;
+            const id = item.querySelector('.add-to-cart').getAttribute('data-id');
+            const dataName = item.querySelector('.add-to-cart').getAttribute('data-name');
+            const dataPrice = item.querySelector('.add-to-cart').getAttribute('data-price');
+            const dataCategory = item.getAttribute('data-category');
+            
+            const listItem = document.createElement('div');
+            listItem.className = 'food-item bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition';
+            listItem.setAttribute('data-category', dataCategory);
+            listItem.innerHTML = `
+                <div class="flex items-center p-3">
+                    <img src="${img}" alt="${title}" class="w-16 h-16 object-cover rounded-lg">
+                    <div class="ml-3 flex-1">
+                        <h3 class="font-semibold">${title}</h3>
+                        <p class="text-xs text-gray-500 line-clamp-1">${description}</p>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-orange-600 font-bold">${price}</span>
+                            <button class="add-to-cart btn-add bg-orange-500 hover:bg-orange-600 text-white py-1 px-2 rounded-full text-xs" data-id="${id}" data-name="${dataName}" data-price="${dataPrice}">
+                                + Tambah
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return listItem;
+        }
+        
         function openFoodDetail(item) {
-    const id = item.querySelector('.add-to-cart').getAttribute('data-id');
-    const name = item.querySelector('.add-to-cart').getAttribute('data-name');
-    const price = item.querySelector('.add-to-cart').getAttribute('data-price');
-    const formattedPrice = `Rp${parseInt(price).toLocaleString('id-ID')}`;
-    
-    // Ambil gambar dari item yang diklik
-    const image = item.querySelector('img').src;
-    
-    // Ambil deskripsi dari item yang diklik
-    const description = item.querySelector('.text-gray-500.text-xs.mt-1.line-clamp-2, .text-gray-500.text-xs.mt-1').textContent;
-    
-    currentDetailItem = { id, name, price };
-    foodDetailTitle.textContent = name;
-    foodDetailPrice.textContent = formattedPrice;
-    
-    // Set gambar yang sesuai dengan item yang diklik
-    document.getElementById('foodDetailImage').src = image;
-    
-    // Set deskripsi yang sesuai dengan item yang diklik
-    document.getElementById('foodDetailDescription').textContent = description;
-    
-    detailQuantity.textContent = '1';
-    detailQty = 1;
-    
-    foodDetailModal.classList.remove('hidden');
-}
+            const id = item.querySelector('.add-to-cart').getAttribute('data-id');
+            const name = item.querySelector('.add-to-cart').getAttribute('data-name');
+            const price = item.querySelector('.add-to-cart').getAttribute('data-price');
+            const formattedPrice = `Rp${parseInt(price).toLocaleString('id-ID')}`;
+            const image = item.querySelector('img').src;
+            const description = item.querySelector('.text-gray-500.text-xs.mt-1').textContent;
+            
+            currentDetailItem = { id, name, price };
+            foodDetailTitle.textContent = name;
+            foodDetailPrice.textContent = formattedPrice;
+            document.getElementById('foodDetailImage').src = image;
+            document.getElementById('foodDetailDescription').textContent = description;
+            
+            detailQuantity.textContent = '1';
+            detailQty = 1;
+            
+            foodDetailModal.classList.remove('hidden');
+        }
         
         closeDetailBtn.addEventListener('click', () => {
             foodDetailModal.classList.add('hidden');
@@ -525,26 +565,14 @@
             }
         });
         
-        // Add click event to food items to open detail modal
         document.querySelectorAll('.food-item').forEach(item => {
             item.addEventListener('click', (e) => {
-                // Only open modal if not clicking on buttons
                 if (!e.target.closest('.add-to-cart') && !e.target.closest('.heart-button')) {
                     openFoodDetail(item);
                 }
             });
         });
         
-        // Spice level selection
-        const spiceLevelBtns = document.querySelectorAll('.spice-level-btn');
-        spiceLevelBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                spiceLevelBtns.forEach(b => b.classList.remove('bg-orange-500', 'text-white'));
-                btn.classList.add('bg-orange-500', 'text-white');
-            });
-        });
-        
-        // Detail quantity controls
         decreaseQtyDetail.addEventListener('click', () => {
             if (detailQty > 1) {
                 detailQty--;
@@ -557,12 +585,9 @@
             detailQuantity.textContent = detailQty;
         });
         
-        // Add to cart from detail modal
         addToCartDetail.addEventListener('click', () => {
             if (currentDetailItem) {
                 const { id, name, price } = currentDetailItem;
-                
-                // Check if item is already in cart
                 const existingItem = cart.find(item => item.id === id);
                 
                 if (existingItem) {
@@ -578,13 +603,10 @@
                 
                 updateCart();
                 foodDetailModal.classList.add('hidden');
-                
-                // Show success toast
                 showSuccessToast(`${name} (${detailQty}x) ditambahkan ke keranjang`);
             }
         });
         
-        // Cart toggle
         cartButton.addEventListener('click', () => {
             cartModal.classList.remove('hidden');
             setTimeout(() => {
@@ -609,20 +631,17 @@
             }
         });
         
-        // Add to cart functionality
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', handleAddToCart);
         });
         
         function handleAddToCart(e) {
-            e.stopPropagation(); // Prevent opening food detail when clicking add button
-            
-            const button = this || e.currentTarget;
+            e.stopPropagation();
+            const button = e.currentTarget;
             const id = button.getAttribute('data-id');
             const name = button.getAttribute('data-name');
             const price = parseInt(button.getAttribute('data-price'));
             
-            // Check if item is already in cart
             const existingItem = cart.find(item => item.id === id);
             
             if (existingItem) {
@@ -637,85 +656,77 @@
             }
             
             updateCart();
-            
-            // Show success toast
             showSuccessToast(`${name} ditambahkan ke keranjang`);
         }
         
         function updateCart() {
-    // Update cart count
-    const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-    cartCount.textContent = totalItems;
-    
-    if (totalItems > 0) {
-        cartCount.classList.remove('hidden');
-        checkoutBtn.removeAttribute('disabled');
-        emptyCartMessage.classList.add('hidden');
-    } else {
-        cartCount.classList.add('hidden');
-        checkoutBtn.setAttribute('disabled', 'disabled');
-        emptyCartMessage.classList.remove('hidden');
-    }
-    
-    // Update cart items
-    cartItems.innerHTML = cart.length === 0 ? emptyCartMessage.outerHTML : '';
-    
-    let subtotal = 0;
-    
-    cart.forEach(item => {
-        const itemTotal = item.price * item.quantity;
-        subtotal += itemTotal;
-        
-        const cartItem = document.createElement('div');
-        cartItem.className = 'flex items-center justify-between py-3 border-b last:border-b-0';
-        cartItem.innerHTML = `
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                    <i class="fas fa-utensils text-gray-500"></i>
-                </div>
-                <div>
-                    <h4 class="font-medium">${item.name}</h4>
-                    <p class="text-orange-600 text-sm">Rp${item.price.toLocaleString('id-ID')}</p>
-                </div>
-            </div>
-            <div class="flex items-center">
-                <button class="decrease-quantity bg-gray-100 hover:bg-gray-200 p-1 rounded-full" data-id="${item.id}">
-                    <i class="fas fa-minus text-gray-600 text-xs"></i>
-                </button>
-                <span class="mx-3 font-medium">${item.quantity}</span>
-                <button class="increase-quantity bg-gray-100 hover:bg-gray-200 p-1 rounded-full" data-id="${item.id}">
-                    <i class="fas fa-plus text-gray-600 text-xs"></i>
-                </button>
-                <button class="remove-item ml-4 text-gray-400 hover:text-red-500" data-id="${item.id}">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        `;
-        
-        if (cart.length > 0) {
-            cartItems.appendChild(cartItem);
+            const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            
+            if (totalItems > 0) {
+                cartCount.classList.remove('hidden');
+                checkoutBtn.removeAttribute('disabled');
+                emptyCartMessage.classList.add('hidden');
+            } else {
+                cartCount.classList.add('hidden');
+                checkoutBtn.setAttribute('disabled', 'disabled');
+                emptyCartMessage.classList.remove('hidden');
+            }
+            
+            cartItems.innerHTML = cart.length === 0 ? emptyCartMessage.outerHTML : '';
+            
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                const cartItem = document.createElement('div');
+                cartItem.className = 'flex items-center justify-between py-3 border-b last:border-b-0';
+                cartItem.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-utensils text-gray-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">${item.name}</h4>
+                            <p class="text-orange-600 text-sm">Rp${item.price.toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <button class="decrease-quantity bg-gray-100 hover:bg-gray-200 p-1 rounded-full" data-id="${item.id}">
+                            <i class="fas fa-minus text-gray-600 text-xs"></i>
+                        </button>
+                        <span class="mx-3 font-medium">${item.quantity}</span>
+                        <button class="increase-quantity bg-gray-100 hover:bg-gray-200 p-1 rounded-full" data-id="${item.id}">
+                            <i class="fas fa-plus text-gray-600 text-xs"></i>
+                        </button>
+                        <button class="remove-item ml-4 text-gray-400 hover:text-red-500" data-id="${item.id}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+                
+                if (cart.length > 0) {
+                    cartItems.appendChild(cartItem);
+                }
+            });
+            
+            cartItems.querySelectorAll('.decrease-quantity').forEach(button => {
+                button.addEventListener('click', decreaseQuantity);
+            });
+            
+            cartItems.querySelectorAll('.increase-quantity').forEach(button => {
+                button.addEventListener('click', increaseQuantity);
+            });
+            
+            cartItems.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', removeItem);
+            });
+            
+            subtotalAmount.textContent = `Rp${subtotal.toLocaleString('id-ID')}`;
+            cartTotal.textContent = `Rp${subtotal.toLocaleString('id-ID')}`;
         }
-    });
-    
-    // Add event listeners to new buttons
-    cartItems.querySelectorAll('.decrease-quantity').forEach(button => {
-        button.addEventListener('click', decreaseQuantity);
-    });
-    
-    cartItems.querySelectorAll('.increase-quantity').forEach(button => {
-        button.addEventListener('click', increaseQuantity);
-    });
-    
-    cartItems.querySelectorAll('.remove-item').forEach(button => {
-        button.addEventListener('click', removeItem);
-    });
-    
-    // Update subtotal and total (removing tax and delivery fee calculations)
-    subtotalAmount.textContent = `Rp${subtotal.toLocaleString('id-ID')}`;
-    
-    // Set total equal to subtotal
-    cartTotal.textContent = `Rp${subtotal.toLocaleString('id-ID')}`;
-}
         
         function decreaseQuantity() {
             const id = this.getAttribute('data-id');
@@ -763,7 +774,6 @@
             }, 3000);
         }
         
-        // Heart button toggle
         document.querySelectorAll('.heart-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -772,128 +782,133 @@
             });
         });
         
-        // Simulate loading on checkout
+        // QR Code Modal Handling
+        function generateQRCode(orderData, total) {
+            console.log('Generating QR code with data:', orderData);
+            qrCodeContainer.innerHTML = ''; // Clear previous QR code
+            qrError.classList.add('hidden');
+            
+            try {
+                if (typeof QRCode === 'undefined') {
+                    throw new Error('QRCode library not loaded');
+                }
+                new QRCode(qrCodeContainer, {
+                    text: JSON.stringify(orderData),
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+                qrTotalAmount.textContent = `Rp${total.toLocaleString('id-ID')}`;
+                qrCodeModal.classList.remove('hidden');
+            } catch (error) {
+                console.error('Failed to generate QR code:', error);
+                qrError.textContent = `Gagal menghasilkan QR code: ${error.message}. Pastikan file qrcode.min.js tersedia.`;
+                qrError.classList.remove('hidden');
+                qrCodeModal.classList.remove('hidden');
+            }
+        }
+        
+        closeQrModalBtn.addEventListener('click', () => {
+            console.log('Closing QR modal');
+            qrCodeModal.classList.add('hidden');
+            qrError.classList.add('hidden');
+        });
+        
+        qrCodeModal.addEventListener('click', (e) => {
+            if (e.target === qrCodeModal) {
+                console.log('Closing QR modal via overlay');
+                qrCodeModal.classList.add('hidden');
+                qrError.classList.add('hidden');
+            }
+        });
+        
+        confirmPaymentBtn.addEventListener('click', () => {
+            console.log('Confirm payment button clicked');
+            loadingIndicator.classList.remove('hidden');
+            setTimeout(() => {
+                loadingIndicator.classList.add('hidden');
+                qrCodeModal.classList.add('hidden');
+                closeCart();
+                cart = [];
+                updateCart();
+                showSuccessToast('Pembayaran berhasil! Pesanan Anda sedang diproses.');
+            }, 2000);
+        });
+        
         checkoutBtn.addEventListener('click', () => {
+            console.log('Checkout button clicked, cart:', cart);
+            if (cart.length === 0) {
+                console.log('Cart is empty, cannot proceed to checkout');
+                showSuccessToast('Keranjang kosong, tambahkan item terlebih dahulu');
+                return;
+            }
             loadingIndicator.classList.remove('hidden');
             
             setTimeout(() => {
                 loadingIndicator.classList.add('hidden');
-                closeCart();
                 
-                // Clear cart
-                cart = [];
-                updateCart();
+                const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                const orderData = {
+                    orderId: `ORD-${Date.now()}`,
+                    items: cart.map(item => ({
+                        name: item.name,
+                        quantity: item.quantity,
+                        price: item.price
+                    })),
+                    total,
+                    timestamp: new Date().toISOString()
+                };
                 
-                // Show order success message
-                showSuccessToast('Pesanan berhasil dibuat!');
-            }, 2000);
+                generateQRCode(orderData, total);
+            }, 1000);
         });
         
-        // Initialize cart
-        updateCart();
-        // Add this after the cart initialization in your script
-// Category filter functionality
-const categoryButtons = document.querySelectorAll('.category-btn');
-
-categoryButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        // Update active category button
-        categoryButtons.forEach(btn => {
-            btn.classList.remove('bg-orange-500', 'text-white');
-            btn.classList.add('bg-white', 'text-gray-700');
-        });
+        const categoryButtons = document.querySelectorAll('.category-btn');
         
-        button.classList.remove('bg-white', 'text-gray-700');
-        button.classList.add('bg-orange-500', 'text-white');
-        
-        const selectedCategory = button.getAttribute('data-category');
-        
-        // Filter food items based on category
-        const foodItems = document.querySelectorAll('.food-item');
-        
-        foodItems.forEach(item => {
-            const itemCategory = item.getAttribute('data-category');
-            
-            if (selectedCategory === 'all' || selectedCategory === itemCategory) {
-                item.classList.remove('hidden');
-            } else {
-                item.classList.add('hidden');
-            }
-        });
-        
-        // Also update the list view if it's currently shown
-        if (!listView.classList.contains('hidden')) {
-            // Clear and repopulate list view with filtered items
-            listView.innerHTML = '';
-            
-            foodItems.forEach(item => {
-                const itemCategory = item.getAttribute('data-category');
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                categoryButtons.forEach(btn => {
+                    btn.classList.remove('bg-orange-500', 'text-white');
+                    btn.classList.add('bg-white', 'text-gray-700');
+                });
                 
-                if (selectedCategory === 'all' || selectedCategory === itemCategory) {
-                    const clonedItem = createListViewItem(item);
-                    listView.appendChild(clonedItem);
+                button.classList.remove('bg-white', 'text-gray-700');
+                button.classList.add('bg-orange-500', 'text-white');
+                
+                const selectedCategory = button.getAttribute('data-category');
+                
+                const foodItems = document.querySelectorAll('.food-item');
+                
+                foodItems.forEach(item => {
+                    const itemCategory = item.getAttribute('data-category');
+                    
+                    if (selectedCategory === 'all' || selectedCategory === itemCategory) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+                
+                if (!listView.classList.contains('hidden')) {
+                    listView.innerHTML = '';
+                    foodItems.forEach(item => {
+                        const itemCategory = item.getAttribute('data-category');
+                        if (selectedCategory === 'all' || selectedCategory === itemCategory) {
+                            const clonedItem = createListViewItem(item);
+                            listView.appendChild(clonedItem);
+                        }
+                    });
+                    
+                    listView.querySelectorAll('.add-to-cart').forEach(button => {
+                        button.addEventListener('click', handleAddToCart);
+                    });
                 }
             });
-            
-            // Re-add event listeners to newly created buttons in list view
-            listView.querySelectorAll('.add-to-cart').forEach(button => {
-                button.addEventListener('click', handleAddToCart);
-            });
-        }
-    });
-});
-
-// Helper function to create list view items
-function createListViewItem(item) {
-    const img = item.querySelector('img').src;
-    const title = item.querySelector('h3').textContent;
-    const price = item.querySelector('.text-orange-600').textContent;
-    const description = item.querySelector('.text-gray-500.text-xs.mt-1').textContent;
-    const id = item.querySelector('.add-to-cart').getAttribute('data-id');
-    const dataName = item.querySelector('.add-to-cart').getAttribute('data-name');
-    const dataPrice = item.querySelector('.add-to-cart').getAttribute('data-price');
-    const dataCategory = item.getAttribute('data-category');
-    
-    const listItem = document.createElement('div');
-    listItem.className = 'food-item bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition';
-    listItem.setAttribute('data-category', dataCategory);
-    listItem.innerHTML = `
-        <div class="flex items-center p-3">
-            <img src="${img}" alt="${title}" class="w-16 h-16 object-cover rounded-lg">
-            <div class="ml-3 flex-1">
-                <h3 class="font-semibold">${title}</h3>
-                <p class="text-xs text-gray-500 line-clamp-1">${description}</p>
-                <div class="flex justify-between items-center mt-1">
-                    <span class="text-orange-600 font-bold">${price}</span>
-                    <button class="add-to-cart btn-add bg-orange-500 hover:bg-orange-600 text-white py-1 px-2 rounded-full text-xs" data-id="${id}" data-name="${dataName}" data-price="${dataPrice}">
-                        + Tambah
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    return listItem;
-}
-
-// Modify the populateListView function to use createListViewItem
-function populateListView() {
-    // Clear any existing items
-    listView.innerHTML = '';
-    
-    // Get all visible food items (respecting current category filter)
-    const foodItems = document.querySelectorAll('.food-item:not(.hidden)');
-    
-    foodItems.forEach(item => {
-        const listItem = createListViewItem(item);
-        listView.appendChild(listItem);
-    });
-    
-    // Add event listeners to newly created buttons
-    listView.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', handleAddToCart);
-    });
-}
+        });
+        
+        updateCart();
     </script>
 </body>
 </html>
