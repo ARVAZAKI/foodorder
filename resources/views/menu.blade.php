@@ -6,9 +6,10 @@
     <title>RasaNusantara - Pesan Makanan Online</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        
+
         body {
             font-family: 'Poppins', sans-serif;
             scroll-behavior: smooth;
@@ -17,12 +18,12 @@
         .food-item {
             transition: all 0.3s ease;
         }
-        
+
         .food-item:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        
+
         .cart-count {
             position: absolute;
             top: -8px;
@@ -47,90 +48,65 @@
             100% { transform: scale(1); }
         }
 
-        .category-scroll::-webkit-scrollbar {
-            display: none;
-        }
-        
+        .category-scroll::-webkit-scrollbar { display: none; }
         .category-scroll {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
 
-        .bottom-nav {
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-        }
+        .bottom-nav { box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); }
+        .card-shadow { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
 
-        .card-shadow {
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+        .btn-add { transition: all 0.3s ease; }
+        .btn-add:hover { transform: scale(1.05); }
+        .btn-add:active { transform: scale(0.95); }
 
-        .btn-add {
-            transition: all 0.3s ease;
-        }
-        
-        .btn-add:hover {
-            transform: scale(1.05);
-        }
-        
-        .btn-add:active {
-            transform: scale(0.95);
-        }
-        
-        .cart-slide-up {
-            animation: slideUp 0.3s ease-out forwards;
-        }
-        
-        .cart-slide-down {
-            animation: slideDown 0.3s ease-out forwards;
-        }
-        
+        .cart-slide-up { animation: slideUp 0.3s ease-out forwards; }
+        .cart-slide-down { animation: slideDown 0.3s ease-out forwards; }
+
         @keyframes slideUp {
             from { transform: translateY(100%); }
             to { transform: translateY(0); }
         }
-        
+
         @keyframes slideDown {
             from { transform: translateY(0); }
             to { transform: translateY(100%); }
         }
-        
-        .success-toast {
-            animation: fadeInOut 2s ease-in-out;
-        }
-        
+
+        .success-toast { animation: fadeInOut 2s ease-in-out; }
+
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(20px); }
             15% { opacity: 1; transform: translateY(0); }
             85% { opacity: 1; transform: translateY(0); }
             100% { opacity: 0; transform: translateY(-20px); }
         }
-        
-        .rating span {
-            color: #FCD34D;
-        }
-        
+
+        .rating span { color: #FCD34D; }
+
         .skeleton-loading {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
         }
-        
+
         @keyframes skeleton-loading {
             0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
-        
+
         .heart-button.active {
             color: #EF4444;
             animation: heartBeat 0.3s ease-in-out;
         }
-        
+
         @keyframes heartBeat {
             0% { transform: scale(1); }
             50% { transform: scale(1.4); }
             100% { transform: scale(1); }
         }
-        
+
         .badge-new {
             position: absolute;
             top: 10px;
@@ -143,7 +119,7 @@
             border-radius: 12px;
             z-index: 10;
         }
-        
+
         .badge-discount {
             position: absolute;
             top: 10px;
@@ -156,19 +132,16 @@
             border-radius: 12px;
             z-index: 10;
         }
-        
+
         .quantity-input::-webkit-inner-spin-button,
         .quantity-input::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-        
-        .food-card:hover .food-card-overlay {
-            opacity: 1;
-        }
-        
+
+        .food-card:hover .food-card-overlay { opacity: 1; }
         .food-card-overlay {
-            background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -192,140 +165,145 @@
             </div>
         </div>
     </header>
-<!-- Categories Section -->
-<div class="container mx-auto px-4 py-3">
-    <div class="flex overflow-x-auto space-x-3 pb-2 category-scroll">
-        <button class="category-btn bg-orange-500 text-white px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium" data-category="all">
-            <i class="fas fa-utensils mr-2"></i>Semua
-        </button>
-        @foreach($categories as $category)
-        <button class="category-btn bg-white text-gray-700 px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium shadow-sm" data-category="{{ $category->id }}">
-            <i class="fas fa-drumstick-bite  mr-2"></i>{{ $category->name }}
-        </button>
-        @endforeach
-    </div>
-</div>
 
-<!-- Food Menu Section -->
-<div id="menu" class="container mx-auto px-4 py-4 pb-24">
-    <div class="flex justify-between items-center mb-3">
-        <h2 class="text-lg font-bold">Menu</h2>
-        <div class="flex items-center space-x-2">
-            <button id="gridViewBtn" class="text-orange-500 p-1 rounded-md bg-orange-100">
-                <i class="fas fa-th-large"></i>
+    <!-- Categories Section -->
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex overflow-x-auto space-x-3 pb-2 category-scroll">
+            <button class="category-btn bg-orange-500 text-white px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium" data-category="all">
+                <i class="fas fa-utensils mr-2"></i>Semua
             </button>
-            <button id="listViewBtn" class="text-gray-400 p-1 rounded-md hover:bg-gray-100">
-                <i class="fas fa-list"></i>
+            @foreach($categories as $category)
+            <button class="category-btn bg-white text-gray-700 px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium shadow-sm" data-category="{{ $category->id }}">
+                <i class="fas fa-drumstick-bite mr-2"></i>{{ $category->name }}
             </button>
+            @endforeach
         </div>
     </div>
-    
-    <div id="gridView" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @foreach($items as $item)
-        <div class="food-item bg-white rounded-xl overflow-hidden shadow-sm zoom-on-hover flex" data-category="{{ $item->category_id }}">
-            <div class="relative">
-                <img src="{{asset('storage/' . $item->item_image)}}" alt="{{ $item->name }}" class="w-24 h-24 object-cover">
-            </div>
-            <div class="p-3 flex-1 flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-start">
-                        <h3 class="font-semibold text-base">{{ $item->name }}</h3>
-                    </div>
-                    <div class="flex items-center mt-1 mb-1">
-                        <div class="rating text-xs text-yellow-400">
-                            {{-- 4 full stars --}}
-                            @for ($i = 0; $i < 4; $i++)
-                                <i class="fas fa-star"></i>
-                            @endfor
-                        
-                            {{-- 1 half star --}}
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                        
-                    </div>
-                    <p class="text-gray-500 text-xs mt-1 line-clamp-2">{{ $item->description }}</p>
-                </div>
-                <div class="flex justify-between items-center mt-2">
-                    <span class="text-orange-600 font-bold">Rp{{ number_format($item->price, 0, ',', '.') }}</span>
-                    <button class="add-to-cart btn-add bg-orange-500 hover:bg-orange-600 text-white py-1 px-3 rounded-full text-sm flex items-center" 
-                            data-id="{{ $item->id }}" 
-                            data-name="{{ $item->name }}" 
-                            data-price="{{ $item->price }}">
-                        <i class="fas fa-plus mr-1"></i> Tambah
-                    </button>
-                </div>
-            </div>
-        </div>
-        @endforeach
-    </div>
 
-    <!-- List View (initially hidden) -->
-    <div id="listView" class="space-y-3 hidden">
-        <!-- Food items will be dynamically populated via JavaScript -->
-    </div>
-</div>
-
-<!-- Food Details Modal -->
-<div id="foodDetailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div class="relative">
-            <img src="" alt="Food Detail" id="foodDetailImage" class="w-full h-48 object-cover rounded-t-2xl">
-            <button id="closeDetailBtn" class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md text-gray-700 hover:text-gray-900">
-                <i class="fas fa-times"></i>
-            </button>
-            <button class="heart-button absolute top-3 left-3 bg-white p-2 rounded-full shadow-md text-gray-300 hover:text-red-500">
-                <i class="fas fa-heart"></i>
-            </button>
-        </div>
-        <div class="p-4">
-            <div class="flex justify-between items-start">
-                <h2 id="foodDetailTitle" class="text-xl font-bold"></h2>
-                <span id="foodDetailBadge" class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">Populer</span>
-            </div>
-            
-            <div class="flex items-center mt-2">
-                <div class="rating text-sm text-yellow-400">
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star"></i>
-                    <i class="fas fa-star-half-alt"></i>
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <h3 class="font-semibold text-gray-800">Deskripsi</h3>
-                <p class="text-gray-600 text-sm mt-1" id="foodDetailDescription"></p>
-            </div>
-            
-            <div class="mt-6 flex justify-between items-center">
-                <div>
-                    <p class="text-gray-500 text-sm">Harga</p>
-                    <p id="foodDetailPrice" class="text-orange-600 font-bold text-xl"></p>
-                </div>
-                <div class="flex items-center">
-                    <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full" id="decreaseQtyDetail">
-                        <i class="fas fa-minus text-gray-600 text-xs"></i>
-                    </button>
-                    <span class="mx-4 font-medium" id="detailQuantity">1</span>
-                    <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full" id="increaseQtyDetail">
-                        <i class="fas fa-plus text-gray-600 text-xs"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="mt-6">
-                <button id="addToCartDetail" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 md:py-3 rounded-xl font-medium md:font-bold text-base md:text-lg flex items-center justify-center">
-                    <i class="fas fa-shopping-cart mr-1 md:mr-2 text-sm md:text-base"></i> Tambahkan ke Keranjang
+    <!-- Food Menu Section -->
+    <div id="menu" class="container mx-auto px-4 py-4 pb-24">
+        <div class="flex justify-between items-center mb-3">
+            <h2 class="text-lg font-bold">Menu</h2>
+            <div class="flex items-center space-x-2">
+                <button id="gridViewBtn" class="text-orange-500 p-1 rounded-md bg-orange-100">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button id="listViewBtn" class="text-gray-400 p-1 rounded-md hover:bg-gray-100">
+                    <i class="fas fa-list"></i>
                 </button>
             </div>
         </div>
+
+        <div id="gridView" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            @foreach($items as $item)
+            <div class="food-item bg-white rounded-xl overflow-hidden shadow-sm zoom-on-hover flex" data-category="{{ $item->category_id }}">
+                <div class="relative">
+                    <img src="{{asset('storage/' . $item->item_image)}}" alt="{{ $item->name }}" class="w-24 h-24 object-cover">
+                </div>
+                <div class="p-3 flex-1 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-semibold text-base">{{ $item->name }}</h3>
+                        </div>
+                        <div class="flex items-center mt-1 mb-1">
+                            <div class="rating text-xs text-yellow-400">
+                                @for ($i = 0; $i < 4; $i++)
+                                    <i class="fas fa-star"></i>
+                                    @endfor
+                                    <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-1 line-clamp-2">{{ $item->description }}</p>
+                    </div>
+                    <div class="flex justify-between items-center mt-2">
+                        <span class="text-orange-600 font-bold">Rp{{ number_format($item->price, 0, ',', '.') }}</span>
+                        <button class="add-to-cart btn-add bg-orange-500 hover:bg-orange-600 text-white py-1 px-3 rounded-full text-sm flex items-center"
+                            data-id="{{ $item->id }}"
+                            data-name="{{ $item->name }}"
+                            data-price="{{ $item->price }}">
+                            <i class="fas fa-plus mr-1"></i> Tambah
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <!-- List View (initially hidden) -->
+        <div id="listView" class="space-y-3 hidden">
+            <!-- Food items will be dynamically populated via JavaScript -->
+        </div>
     </div>
-</div>
+
+    <!-- Food Details Modal -->
+    <div id="foodDetailModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="relative">
+                <img src="" alt="Food Detail" id="foodDetailImage" class="w-full h-48 object-cover rounded-t-2xl">
+                <button id="closeDetailBtn" class="absolute top-3 right-3 bg-white p-2 rounded-full shadow-md text-gray-700 hover:text-gray-900">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button class="heart-button absolute top-3 left-3 bg-white p-2 rounded-full shadow-md text-gray-300 hover:text-red-500">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="flex justify-between items-start">
+                    <h2 id="foodDetailTitle" class="text-xl font-bold"></h2>
+                    <span id="foodDetailBadge" class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">Populer</span>
+                </div>
+
+                <div class="flex items-center mt-2">
+                    <div class="rating text-sm text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3 class="font-semibold text-gray-800">Deskripsi</h3>
+                    <p class="text-gray-600 text-sm mt-1" id="foodDetailDescription"></p>
+                </div>
+
+                <div class="mt-4">
+                    <label for="modalCustomerName" class="block text-sm font-medium text-gray-700 mb-1">Nama Pemesan</label>
+                    <input type="text" id="modalCustomerName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500" placeholder="Masukkan nama Anda">
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <div>
+                        <p class="text-gray-500 text-sm">Harga</p>
+                        <p id="foodDetailPrice" class="text-orange-600 font-bold text-xl"></p>
+                    </div>
+                    <div class="flex items-center">
+                        <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full" id="decreaseQtyDetail">
+                            <i class="fas fa-minus text-gray-600 text-xs"></i>
+                        </button>
+                        <span class="mx-4 font-medium" id="detailQuantity">1</span>
+                        <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-full" id="increaseQtyDetail">
+                            <i class="fas fa-plus text-gray-600 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex space-x-4">
+                    <button id="addToCartDetail" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-xl font-medium flex items-center justify-center">
+                        <i class="fas fa-shopping-cart mr-1"></i> Tambahkan ke Keranjang
+                    </button>
+                    <button id="payNowDetail" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl font-medium flex items-center justify-center">
+                        <i class="fas fa-credit-card mr-1"></i> Bayar Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Cart Sheet -->
     <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
-        <div id="cartSheet" class="bg-white rounded-t-2xl absolute bottom-0 left-0 right-0 max-h-[80vh] overflow-y-auto transform transition-transform duration-300">
+        <div id="cartSheet" class="bg-white rounded-t-2xl absolute bottom-0 left-0 right-0 max-h-[80vh] overflow-y-auto transform transition-transform duration-300 translate-y-full">
             <div class="px-4 py-3 border-b">
                 <div class="mb-3">
                     <label for="customerName" class="block text-sm font-medium text-gray-700 mb-1">Nama Pemesan</label>
@@ -342,30 +320,26 @@
                 </div>
             </div>
             <div id="cartItems" class="p-4">
-                <!-- Cart items will be added here dynamically -->
                 <div class="text-center text-gray-500 py-12" id="emptyCartMessage">
                     <i class="fas fa-shopping-basket text-5xl mb-4 text-gray-300"></i>
                     <p class="text-lg">Keranjang belanja masih kosong</p>
                     <p class="text-sm text-gray-400 mt-2">Tambahkan beberapa item untuk melanjutkan</p>
                 </div>
             </div>
-            
+
             <div class="px-4 pt-2 pb-4">
-              
-                
                 <div class="space-y-2 mb-4">
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-600">Subtotal</span>
                         <span id="subtotalAmount">Rp 0</span>
                     </div>
-                    
                 </div>
-                
+
                 <div class="flex justify-between font-bold text-lg mb-4 pt-2 border-t">
                     <span>Total:</span>
                     <span id="cartTotal">Rp 0</span>
                 </div>
-                
+
                 <button id="checkoutBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center">
                     Lanjutkan ke Pembayaran
                     <i class="fas fa-arrow-right ml-2"></i>
@@ -373,32 +347,37 @@
             </div>
         </div>
     </div>
+
+    <div id="successPopup" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 relative">
+            <button id="closeSuccessPopup" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="text-center">
+                <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+                <h2 class="text-xl font-bold text-gray-800">Pembayaran Berhasil!</h2>
+                <p class="text-gray-600 mt-2">Terima kasih atas pesanan Anda.</p>
+                <div class="mt-4 text-left">
+                    <p><strong>Kode Transaksi:</strong> <span id="successTransactionCode"></span></p>
+                    <p><strong>Nama Pemesan:</strong> <span id="successCustomerName"></span></p>
+                    <p><strong>Total:</strong> <span id="successTotalPrice"></span></p>
+                    <p class="mt-4"><strong>QR Code:</strong></p>
+                    <img id="successQrCode" src="" alt="QR Code" class="mx-auto mt-2 w-40 h-40">
+                    <p class="text-sm text-gray-500 mt-2">Scan kode QR ini di halaman "Daftar Pesanan" untuk melihat detail pesanan.</p>
+                </div>
+                <button id="successOkBtn" class="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-xl font-medium">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Form -->
     <form id="checkoutForm" action="{{ route('transactions.store') }}" method="POST" class="hidden">
         @csrf
         <input type="text" name="name" id="checkoutName">
         <div id="checkoutItems"></div>
     </form>
-    <div id="qrCodeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Scan QR Code untuk Pembayaran</h2>
-                <button id="closeQrModalBtn" class="text-gray-500 hover:text-gray-700 p-1">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div id="qrCode" class="flex justify-center mb-4"></div>
-            <div id="qrError" class="error-message hidden">Gagal menghasilkan QR code. Silakan coba lagi.</div>
-            <p class="text-gray-600 text-sm text-center mb-4">Scan kode ini untuk menyelesaikan pembayaran Anda.</p>
-            <div class="flex justify-between items-center">
-                <p class="text-gray-500 text-sm">Total Pembayaran</p>
-                <p id="qrTotalAmount" class="text-orange-600 font-bold text-lg"></p>
-            </div>
-            <button id="confirmPaymentBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-lg mt-4 flex justify-center items-center">
-                Konfirmasi Pembayaran
-                <i class="fas fa-check ml-2"></i>
-            </button>
-        </div>
-    </div>
 
     <!-- Order Success Toast -->
     <div id="successToast" class="fixed bottom-20 left-0 right-0 flex justify-center hidden">
@@ -422,11 +401,6 @@
     </div>
 
     <script>
-        // Check if QRCode library is loaded
-        window.addEventListener('load', () => {
-            console.log('QRCode library loaded:', typeof QRCode !== 'undefined');
-        });
-
         // Cart functionality
         const cartButton = document.getElementById('cartButton');
         const cartModal = document.getElementById('cartModal');
@@ -449,16 +423,25 @@
         const decreaseQtyDetail = document.getElementById('decreaseQtyDetail');
         const increaseQtyDetail = document.getElementById('increaseQtyDetail');
         const addToCartDetail = document.getElementById('addToCartDetail');
+        const payNowDetail = document.getElementById('payNowDetail');
+        const modalCustomerName = document.getElementById('modalCustomerName');
         const gridViewBtn = document.getElementById('gridViewBtn');
         const listViewBtn = document.getElementById('listViewBtn');
         const gridView = document.getElementById('gridView');
         const listView = document.getElementById('listView');
         const customerName = document.getElementById('customerName');
+        const successPopup = document.getElementById('successPopup');
+        const closeSuccessPopup = document.getElementById('closeSuccessPopup');
+        const successOkBtn = document.getElementById('successOkBtn');
+        const successTransactionCode = document.getElementById('successTransactionCode');
+        const successCustomerName = document.getElementById('successCustomerName');
+        const successTotalPrice = document.getElementById('successTotalPrice');
+        const successQrCode = document.getElementById('successQrCode');
 
         let cart = [];
         let currentDetailItem = null;
         let detailQty = 1;
-        
+
         // Toggle view buttons
         gridViewBtn.addEventListener('click', () => {
             gridView.classList.remove('hidden');
@@ -468,7 +451,7 @@
             listViewBtn.classList.remove('bg-orange-100', 'text-orange-500');
             listViewBtn.classList.add('text-gray-400');
         });
-        
+
         listViewBtn.addEventListener('click', () => {
             gridView.classList.add('hidden');
             listView.classList.remove('hidden');
@@ -476,26 +459,26 @@
             listViewBtn.classList.remove('text-gray-400');
             gridViewBtn.classList.remove('bg-orange-100', 'text-orange-500');
             gridViewBtn.classList.add('text-gray-400');
-            
+
             if (listView.children.length === 0) {
                 populateListView();
             }
         });
-        
+
         function populateListView() {
             listView.innerHTML = '';
             const foodItems = document.querySelectorAll('.food-item:not(.hidden)');
-            
+
             foodItems.forEach(item => {
                 const listItem = createListViewItem(item);
                 listView.appendChild(listItem);
             });
-            
+
             listView.querySelectorAll('.add-to-cart').forEach(button => {
                 button.addEventListener('click', handleAddToCart);
             });
         }
-        
+
         function createListViewItem(item) {
             const img = item.querySelector('img').src;
             const title = item.querySelector('h3').textContent;
@@ -505,7 +488,7 @@
             const dataName = item.querySelector('.add-to-cart').getAttribute('data-name');
             const dataPrice = item.querySelector('.add-to-cart').getAttribute('data-price');
             const dataCategory = item.getAttribute('data-category');
-            
+
             const listItem = document.createElement('div');
             listItem.className = 'food-item bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition';
             listItem.setAttribute('data-category', dataCategory);
@@ -524,10 +507,10 @@
                     </div>
                 </div>
             `;
-            
+
             return listItem;
         }
-        
+
         function openFoodDetail(item) {
             const id = item.querySelector('.add-to-cart').getAttribute('data-id');
             const name = item.querySelector('.add-to-cart').getAttribute('data-name');
@@ -535,29 +518,30 @@
             const formattedPrice = `Rp${parseInt(price).toLocaleString('id-ID')}`;
             const image = item.querySelector('img').src;
             const description = item.querySelector('.text-gray-500.text-xs.mt-1').textContent;
-            
+
             currentDetailItem = { id, name, price };
             foodDetailTitle.textContent = name;
             foodDetailPrice.textContent = formattedPrice;
             document.getElementById('foodDetailImage').src = image;
             document.getElementById('foodDetailDescription').textContent = description;
-            
+
             detailQuantity.textContent = '1';
             detailQty = 1;
-            
+            modalCustomerName.value = customerName.value; // Sync with cart customer name
+
             foodDetailModal.classList.remove('hidden');
         }
-        
+
         closeDetailBtn.addEventListener('click', () => {
             foodDetailModal.classList.add('hidden');
         });
-        
+
         foodDetailModal.addEventListener('click', (e) => {
             if (e.target === foodDetailModal) {
                 foodDetailModal.classList.add('hidden');
             }
         });
-        
+
         document.querySelectorAll('.food-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 if (!e.target.closest('.add-to-cart') && !e.target.closest('.heart-button')) {
@@ -565,24 +549,24 @@
                 }
             });
         });
-        
+
         decreaseQtyDetail.addEventListener('click', () => {
             if (detailQty > 1) {
                 detailQty--;
                 detailQuantity.textContent = detailQty;
             }
         });
-        
+
         increaseQtyDetail.addEventListener('click', () => {
             detailQty++;
             detailQuantity.textContent = detailQty;
         });
-        
+
         addToCartDetail.addEventListener('click', () => {
             if (currentDetailItem) {
                 const { id, name, price } = currentDetailItem;
                 const existingItem = cart.find(item => item.id === id);
-                
+
                 if (existingItem) {
                     existingItem.quantity += detailQty;
                 } else {
@@ -593,50 +577,135 @@
                         quantity: detailQty
                     });
                 }
-                
+
                 updateCart();
                 foodDetailModal.classList.add('hidden');
                 showSuccessToast(`${name} (${detailQty}x) ditambahkan ke keranjang`);
             }
         });
-        
+
+        payNowDetail.addEventListener('click', async () => {
+            if (!modalCustomerName.value.trim()) {
+                showSuccessToast('Harap masukkan nama Anda!');
+                modalCustomerName.focus();
+                return;
+            }
+            if (!currentDetailItem) {
+                showSuccessToast('Tidak ada item yang dipilih!');
+                return;
+            }
+            loadingIndicator.classList.remove('hidden');
+            const data = {
+                name: modalCustomerName.value,
+                items: [{
+                    item_id: currentDetailItem.id,
+                    quantity: detailQty
+                }],
+                _token: '{{ csrf_token() }}'
+            };
+            try {
+                console.log('Mengirim data transaksi dari modal:', data);
+                if (typeof snap === 'undefined') {
+                    throw new Error('Midtrans Snap tidak tersedia. Pastikan script Snap dimuat dan client key valid.');
+                }
+                const response = await fetch('{{ route("transactions.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                console.log('Status response:', response.status);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status}, Detail: ${errorText}`);
+                }
+                const result = await response.json();
+                loadingIndicator.classList.add('hidden');
+                console.log('Response dari server:', result);
+                if (result.error) {
+                    showSuccessToast(result.error);
+                    console.error('Server Error:', result.error);
+                    return;
+                }
+                if (!result.snap_token) {
+                    showSuccessToast('Gagal mendapatkan Snap Token, silakan coba lagi.');
+                    console.error('Missing Snap Token:', result);
+                    return;
+                }
+                console.log('Snap Token diterima:', result.snap_token);
+                foodDetailModal.classList.add('hidden');
+                console.log('Memanggil snap.pay dengan token:', result.snap_token);
+                snap.pay(result.snap_token, {
+                    onSuccess: function(result) {
+                        console.log('Pembayaran berhasil:', result);
+                        if (!result.order_id) {
+                            showSuccessToast('Order ID tidak ditemukan, hubungi dukungan.');
+                            console.error('Missing order_id:', result);
+                            return;
+                        }
+                        // Show success popup with QR code
+                        showSuccessPopup(result.transaction, result.qr_url);
+                    },
+                    onPending: function(result) {
+                        console.log('Pembayaran tertunda:', result);
+                        showSuccessToast('Pembayaran tertunda, silakan selesaikan pembayaran.');
+                    },
+                    onError: function(result) {
+                        console.error('Pembayaran gagal:', result);
+                        showSuccessToast('Pembayaran gagal, silakan coba lagi.');
+                    },
+                    onClose: function() {
+                        console.log('Popup pembayaran ditutup');
+                        showSuccessToast('Anda menutup popup pembayaran.');
+                    }
+                });
+            } catch (error) {
+                loadingIndicator.classList.add('hidden');
+                showSuccessToast('Terjadi kesalahan: ' + error.message);
+                console.error('Checkout Error:', error.message);
+            }
+        });
+
         cartButton.addEventListener('click', () => {
             cartModal.classList.remove('hidden');
-            setTimeout(() => {
-                cartSheet.classList.add('translate-y-0');
-                cartSheet.classList.remove('translate-y-full');
-            }, 10);
+            cartSheet.classList.remove('translate-y-full');
+            cartSheet.classList.add('cart-slide-up');
         });
-        
+
         function closeCart() {
-            cartSheet.classList.remove('translate-y-0');
-            cartSheet.classList.add('translate-y-full');
+            cartSheet.classList.remove('cart-slide-up');
+            cartSheet.classList.add('cart-slide-down');
             setTimeout(() => {
                 cartModal.classList.add('hidden');
+                cartSheet.classList.remove('cart-slide-down');
+                cartSheet.classList.add('translate-y-full');
             }, 300);
         }
-        
+
         closeCartBtn.addEventListener('click', closeCart);
-        
+
         cartModal.addEventListener('click', (e) => {
             if (e.target === cartModal) {
                 closeCart();
             }
         });
-        
+
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', handleAddToCart);
         });
-        
+
         function handleAddToCart(e) {
             e.stopPropagation();
             const button = e.currentTarget;
             const id = button.getAttribute('data-id');
             const name = button.getAttribute('data-name');
             const price = parseInt(button.getAttribute('data-price'));
-            
+
             const existingItem = cart.find(item => item.id === id);
-            
+
             if (existingItem) {
                 existingItem.quantity++;
             } else {
@@ -647,15 +716,15 @@
                     quantity: 1
                 });
             }
-            
+
             updateCart();
             showSuccessToast(`${name} ditambahkan ke keranjang`);
         }
-        
+
         function updateCart() {
             const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
             cartCount.textContent = totalItems;
-            
+
             if (totalItems > 0) {
                 cartCount.classList.remove('hidden');
                 checkoutBtn.removeAttribute('disabled');
@@ -665,15 +734,15 @@
                 checkoutBtn.setAttribute('disabled', 'disabled');
                 emptyCartMessage.classList.remove('hidden');
             }
-            
+
             cartItems.innerHTML = cart.length === 0 ? emptyCartMessage.outerHTML : '';
-            
+
             let subtotal = 0;
-            
+
             cart.forEach(item => {
                 const itemTotal = item.price * item.quantity;
                 subtotal += itemTotal;
-                
+
                 const cartItem = document.createElement('div');
                 cartItem.className = 'flex items-center justify-between py-3 border-b last:border-b-0';
                 cartItem.innerHTML = `
@@ -699,57 +768,57 @@
                         </button>
                     </div>
                 `;
-                
+
                 if (cart.length > 0) {
                     cartItems.appendChild(cartItem);
                 }
             });
-            
+
             cartItems.querySelectorAll('.decrease-quantity').forEach(button => {
                 button.addEventListener('click', decreaseQuantity);
             });
-            
+
             cartItems.querySelectorAll('.increase-quantity').forEach(button => {
                 button.addEventListener('click', increaseQuantity);
             });
-            
+
             cartItems.querySelectorAll('.remove-item').forEach(button => {
                 button.addEventListener('click', removeItem);
             });
-            
+
             subtotalAmount.textContent = `Rp${subtotal.toLocaleString('id-ID')}`;
             cartTotal.textContent = `Rp${subtotal.toLocaleString('id-ID')}`;
         }
-        
+
         function decreaseQuantity() {
             const id = this.getAttribute('data-id');
             const itemIndex = cart.findIndex(item => item.id === id);
-            
+
             if (itemIndex !== -1) {
                 if (cart[itemIndex].quantity > 1) {
                     cart[itemIndex].quantity--;
                 } else {
                     cart.splice(itemIndex, 1);
                 }
-                
+
                 updateCart();
             }
         }
-        
+
         function increaseQuantity() {
             const id = this.getAttribute('data-id');
             const item = cart.find(item => item.id === id);
-            
+
             if (item) {
                 item.quantity++;
                 updateCart();
             }
         }
-        
+
         function removeItem() {
             const id = this.getAttribute('data-id');
             const itemIndex = cart.findIndex(item => item.id === id);
-            
+
             if (itemIndex !== -1) {
                 const itemName = cart[itemIndex].name;
                 cart.splice(itemIndex, 1);
@@ -757,16 +826,16 @@
                 showSuccessToast(`${itemName} dihapus dari keranjang`);
             }
         }
-        
+
         function showSuccessToast(message) {
             successToastMessage.textContent = message;
             successToast.classList.remove('hidden');
-            
+
             setTimeout(() => {
                 successToast.classList.add('hidden');
             }, 3000);
         }
-        
+
         document.querySelectorAll('.heart-button').forEach(button => {
             button.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -774,104 +843,122 @@
                 button.classList.toggle('text-gray-300');
             });
         });
-        
-        // Simulate loading on checkout
-        checkoutBtn.addEventListener('click', () => {
-    // Validasi nama
-    if (!customerName.value.trim()) {
-        showSuccessToast('Harap masukkan nama Anda!');
-        customerName.focus();
-        return;
-    }
-    
-    loadingIndicator.classList.remove('hidden');
-    
-    setTimeout(() => {
-        loadingIndicator.classList.add('hidden');
-        closeCart();
-        
-        // Clear cart
-        cart = [];
-        updateCart();
-        
-        // Show order success message with name
-        showSuccessToast(`Pesanan ${customerName.value} berhasil dibuat!`);
-        
-        // Reset nama
-        customerName.value = '';
-    }, 2000);
-});
-        
-checkoutBtn.addEventListener('click', () => {
-        // Validate customer name
-        if (!customerName.value.trim()) {
-            showSuccessToast('Harap masukkan nama Anda!');
-            customerName.focus();
-            return;
-        }
-        
-        if (cart.length === 0) {
-            showSuccessToast('Keranjang kosong, tambahkan item terlebih dahulu');
-            return;
-        }
-        
-        loadingIndicator.classList.remove('hidden');
-        
-        // Set customer name in checkout form
-        document.getElementById('checkoutName').value = customerName.value;
-        
-        // Clear any previous checkout items
-        document.getElementById('checkoutItems').innerHTML = '';
-        
-        // Add cart items to checkout form
-        cart.forEach((item, index) => {
-            const itemIdInput = document.createElement('input');
-            itemIdInput.type = 'hidden';
-            itemIdInput.name = `items[${index}][item_id]`;
-            itemIdInput.value = item.id;
-            
-            const quantityInput = document.createElement('input');
-            quantityInput.type = 'hidden';
-            quantityInput.name = `items[${index}][quantity]`;
-            quantityInput.value = item.quantity;
-            
-            document.getElementById('checkoutItems').appendChild(itemIdInput);
-            document.getElementById('checkoutItems').appendChild(quantityInput);
+
+        checkoutBtn.addEventListener('click', async () => {
+            if (!customerName.value.trim()) {
+                showSuccessToast('Harap masukkan nama Anda!');
+                customerName.focus();
+                return;
+            }
+            if (cart.length === 0) {
+                showSuccessToast('Keranjang kosong, tambahkan item terlebih dahulu');
+                return;
+            }
+            loadingIndicator.classList.remove('hidden');
+            const data = {
+                name: customerName.value,
+                items: cart.map(item => ({
+                    item_id: item.id,
+                    quantity: item.quantity
+                })),
+                _token: '{{ csrf_token() }}'
+            };
+            try {
+                console.log('Mengirim data transaksi:', data);
+                if (typeof snap === 'undefined') {
+                    throw new Error('Midtrans Snap tidak tersedia. Pastikan script Snap dimuat dan client key valid.');
+                }
+                const response = await fetch('{{ route("transactions.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                console.log('Status response:', response.status);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status}, Detail: ${errorText}`);
+                }
+                const result = await response.json();
+                loadingIndicator.classList.add('hidden');
+                console.log('Response dari server:', result);
+                if (result.error) {
+                    showSuccessToast(result.error);
+                    console.error('Server Error:', result.error);
+                    return;
+                }
+                if (!result.snap_token) {
+                    showSuccessToast('Gagal mendapatkan Snap Token, silakan coba lagi.');
+                    console.error('Missing Snap Token:', result);
+                    return;
+                }
+                console.log('Snap Token diterima:', result.snap_token);
+                closeCart();
+                console.log('Memanggil snap.pay dengan token:', result.snap_token);
+                snap.pay(result.snap_token, {
+                    onSuccess: function(result) {
+                        console.log('Pembayaran berhasil:', result);
+                        if (!result.order_id) {
+                            showSuccessToast('Order ID tidak ditemukan, hubungi dukungan.');
+                            console.error('Missing order_id:', result);
+                            return;
+                        }
+                        // Show success popup with QR code
+                        showSuccessPopup(result.transaction, result.qr_url);
+                        // Clear cart
+                        cart = [];
+                        customerName.value = '';
+                        updateCart();
+                    },
+                    onPending: function(result) {
+                        console.log('Pembayaran tertunda:', result);
+                        showSuccessToast('Pembayaran tertunda, silakan selesaikan pembayaran.');
+                    },
+                    onError: function(result) {
+                        console.error('Pembayaran gagal:', result);
+                        showSuccessToast('Pembayaran gagal, silakan coba lagi.');
+                    },
+                    onClose: function() {
+                        console.log('Popup pembayaran ditutup');
+                        showSuccessToast('Anda menutup popup pembayaran.');
+                    }
+                });
+            } catch (error) {
+                loadingIndicator.classList.add('hidden');
+                showSuccessToast('Terjadi kesalahan: ' + error.message);
+                console.error('Checkout Error:', error.message);
+            }
         });
-        
-        // Short timeout to show loading indicator
-        setTimeout(() => {
-            // Submit the form
-            document.getElementById('checkoutForm').submit();
-        }, 500);
-    });
-        
+
         const categoryButtons = document.querySelectorAll('.category-btn');
-        
+
         categoryButtons.forEach(button => {
             button.addEventListener('click', () => {
                 categoryButtons.forEach(btn => {
                     btn.classList.remove('bg-orange-500', 'text-white');
                     btn.classList.add('bg-white', 'text-gray-700');
                 });
-                
+
                 button.classList.remove('bg-white', 'text-gray-700');
                 button.classList.add('bg-orange-500', 'text-white');
-                
+
                 const selectedCategory = button.getAttribute('data-category');
-                
+
                 const foodItems = document.querySelectorAll('.food-item');
-                
+
                 foodItems.forEach(item => {
                     const itemCategory = item.getAttribute('data-category');
-                    
+
                     if (selectedCategory === 'all' || selectedCategory === itemCategory) {
                         item.classList.remove('hidden');
                     } else {
                         item.classList.add('hidden');
                     }
                 });
-                
+
                 if (!listView.classList.contains('hidden')) {
                     listView.innerHTML = '';
                     foodItems.forEach(item => {
@@ -881,16 +968,25 @@ checkoutBtn.addEventListener('click', () => {
                             listView.appendChild(clonedItem);
                         }
                     });
-                    
+
                     listView.querySelectorAll('.add-to-cart').forEach(button => {
                         button.addEventListener('click', handleAddToCart);
                     });
                 }
             });
         });
-        
+
+        function showSuccessPopup(transaction, qrUrl) {
+    console.log('Menampilkan popup sukses:', { transaction, qrUrl });
+    successTransactionCode.textContent = transaction.transaction_code;
+    successCustomerName.textContent = transaction.name;
+    successTotalPrice.textContent = `Rp${transaction.total_price.toLocaleString('id-ID')}`;
+    successQrCode.src = qrUrl;
+    successPopup.classList.remove('hidden');
+}
+
         updateCart();
     </script>
 </body>
 </html>
-                            
+```
