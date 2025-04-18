@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RasaNusantara - Pesan Makanan Online</title>
+    <title>Himar Coffee</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
@@ -43,47 +45,105 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
-        .category-scroll::-webkit-scrollbar { display: none; }
+        .category-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
         .category-scroll {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
 
-        .bottom-nav { box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1); }
-        .card-shadow { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .bottom-nav {
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
 
-        .btn-add { transition: all 0.3s ease; }
-        .btn-add:hover { transform: scale(1.05); }
-        .btn-add:active { transform: scale(0.95); }
+        .card-shadow {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-        .cart-slide-up { animation: slideUp 0.3s ease-out forwards; }
-        .cart-slide-down { animation: slideDown 0.3s ease-out forwards; }
+        .btn-add {
+            transition: all 0.3s ease;
+        }
+
+        .btn-add:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-add:active {
+            transform: scale(0.95);
+        }
+
+        .cart-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+
+        .cart-slide-down {
+            animation: slideDown 0.3s ease-out forwards;
+        }
 
         @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
+            from {
+                transform: translateY(100%);
+            }
+
+            to {
+                transform: translateY(0);
+            }
         }
 
         @keyframes slideDown {
-            from { transform: translateY(0); }
-            to { transform: translateY(100%); }
+            from {
+                transform: translateY(0);
+            }
+
+            to {
+                transform: translateY(100%);
+            }
         }
 
-        .success-toast { animation: fadeInOut 2s ease-in-out; }
+        .success-toast {
+            animation: fadeInOut 2s ease-in-out;
+        }
 
         @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(20px); }
-            15% { opacity: 1; transform: translateY(0); }
-            85% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            15% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            85% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
         }
 
-        .rating span { color: #FCD34D; }
+        .rating span {
+            color: #FCD34D;
+        }
 
         .skeleton-loading {
             background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
@@ -92,8 +152,13 @@
         }
 
         @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
 
         .heart-button.active {
@@ -102,9 +167,17 @@
         }
 
         @keyframes heartBeat {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.4); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.4);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .badge-new {
@@ -139,7 +212,10 @@
             margin: 0;
         }
 
-        .food-card:hover .food-card-overlay { opacity: 1; }
+        .food-card:hover .food-card-overlay {
+            opacity: 1;
+        }
+
         .food-card-overlay {
             background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
             opacity: 0;
@@ -147,29 +223,60 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50 text-gray-800">
     <!-- Header -->
-    <header class="bg-white shadow-sm sticky top-0 z-30">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center">
-                    <i class="fas fa-utensils text-orange-500 mr-2"></i>
-                    <h1 class="text-xl font-bold text-orange-600">Nama Cafe</h1>
+    <nav class="bg-[#FAF0E6] text-white px-6 py-3 mx-4 mt-4 rounded-full shadow-lg">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <img src="assets/logo.png" alt="Logo" class="h-12 w-auto rounded-full" />
+            </div>
+            <div class="hidden md:flex space-x-8 font-medium text-[#36454F]">
+                <a href="/">Beranda</a>
+                <a href="/about-us">About Us</a>
+                <a href="/menu">Menu</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Ikon keranjang -->
+                <div class="relative cursor-pointer p-2" id="cartButton">
+                    <i class="fas fa-shopping-cart text-gray-700 text-lg hover:text-orange-500 transition"></i>
+                    <span id="cartCount" class="cart-count hidden">0</span>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <div class="relative cursor-pointer p-2" id="cartButton">
-                        <i class="fas fa-shopping-cart text-gray-700 text-lg hover:text-orange-500 transition"></i>
-                        <span id="cartCount" class="cart-count">0</span>
-                    </div>
-                </div>
+                <a href="/login" class="hidden md:flex bg-[#8B4513] text-white font-semibold w-24 px-4 py-2 rounded-full border border-black hover:bg-[#556B2F] justify-center items-center">
+                    Login
+                </a>
+                <button onclick="toggleDropdown()" class="md:hidden text-[#36454F] focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
             </div>
         </div>
-    </header>
+    </nav>
+
+    <div id="dropdownMenu" class="fixed top-0 left-0 w-full h-full bg-[#F0FAF7] z-50 hidden">
+        <div class="flex justify-between items-start p-6">
+            <button onclick="toggleDropdown()" class="text-[#004225] text-3xl font-bold">×</button>
+        </div>
+        <div class="flex flex-col items-start px-10 space-y-6 text-[#004225] font-semibold text-lg">
+            <a href="/" onclick="toggleDropdown()">Beranda</a>
+            <a href="/about-us" onclick="toggleDropdown()">About Us</a>
+            <a href="/menu" onclick="toggleDropdown()">Menu</a>
+            <a href="/login" class="mt-4 bg-[#8B4513] text-white px-6 py-2 rounded-full border border-black hover:bg-[#556B2F]">Login</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('hidden');
+        }
+    </script>
 
     <!-- Categories Section -->
     <div class="container mx-auto px-4 py-3">
         <div class="flex overflow-x-auto space-x-3 pb-2 category-scroll">
-            <button class="category-btn bg-orange-500 text-white px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium" data-category="all">
+            <button class="category-btn bg-[#7c6a53] text-white px-5 py-2 rounded-full whitespace-nowrap text-sm font-medium" data-category="all">
                 <i class="fas fa-utensils mr-2"></i>Semua
             </button>
             @foreach($categories as $category)
@@ -185,10 +292,10 @@
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-lg font-bold">Menu</h2>
             <div class="flex items-center space-x-2">
-                <button id="gridViewBtn" class="text-orange-500 p-1 rounded-md bg-orange-100">
+                <button id="gridViewBtn" class="text-[#7c6a53] p-1 rounded-md bg-gray-100">
                     <i class="fas fa-th-large"></i>
                 </button>
-                <button id="listViewBtn" class="text-gray-400 p-1 rounded-md hover:bg-gray-100">
+                <button id="listViewBtn" class="text-[#7c6a53] p-1 rounded-md hover:bg-gray-100">
                     <i class="fas fa-list"></i>
                 </button>
             </div>
@@ -217,7 +324,7 @@
                     </div>
                     <div class="flex justify-between items-center mt-2">
                         <span class="text-orange-600 font-bold">Rp{{ number_format($item->price, 0, ',', '.') }}</span>
-                        <button class="add-to-cart btn-add bg-orange-500 hover:bg-orange-600 text-white py-1 px-3 rounded-full text-sm flex items-center"
+                        <button class="add-to-cart btn-add bg-green-700 hover:bg-green-900 text-white py-1 px-3 rounded-full text-sm flex items-center"
                             data-id="{{ $item->id }}"
                             data-name="{{ $item->name }}"
                             data-price="{{ $item->price }}">
@@ -250,7 +357,7 @@
             <div class="p-4">
                 <div class="flex justify-between items-start">
                     <h2 id="foodDetailTitle" class="text-xl font-bold"></h2>
-                    <span id="foodDetailBadge" class="bg-orange-100 text-orange-600 text-xs px-2 py-1 rounded-full">Populer</span>
+                    <span id="foodDetailBadge" class="bg-white text-orange-600 text-xs px-2 py-1 rounded-full">Populer</span>
                 </div>
 
                 <div class="flex items-center mt-2">
@@ -290,10 +397,10 @@
                 </div>
 
                 <div class="mt-6 flex space-x-4">
-                    <button id="addToCartDetail" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-xl font-medium flex items-center justify-center">
-                        <i class="fas fa-shopping-cart mr-1"></i> Tambahkan ke Keranjang
+                    <button id="addToCartDetail" class="flex-1 bg-[#7c6a53] hover:bg-[#695842] text-white py-2 rounded-xl font-medium flex items-center justify-center">
+                        <i class="fas fa-shopping-cart ml-4"></i> Tambahkan ke Keranjang
                     </button>
-                    <button id="payNowDetail" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl font-medium flex items-center justify-center">
+                    <button id="payNowDetail" class="flex-1 bg-green-700 hover:bg-green-900 text-white py-2 rounded-xl font-medium flex items-center justify-center">
                         <i class="fas fa-credit-card mr-1"></i> Bayar Sekarang
                     </button>
                 </div>
@@ -340,7 +447,7 @@
                     <span id="cartTotal">Rp 0</span>
                 </div>
 
-                <button id="checkoutBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center">
+                <button id="checkoutBtn" class="w-full bg-green-700 hover:bg-green-900 text-white py-3 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center">
                     Lanjutkan ke Pembayaran
                     <i class="fas fa-arrow-right ml-2"></i>
                 </button>
@@ -365,7 +472,7 @@
                     <img id="successQrCode" src="" alt="QR Code" class="mx-auto mt-2 w-40 h-40">
                     <p class="text-sm text-gray-500 mt-2">Simpan kode QR ini untuk mengambil pesanan di kasir</p>
                 </div>
-                <button id="successOkBtn" class="mt-6 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-xl font-medium">
+                <button id="successOkBtn" class="mt-6 w-full bg-green-700 hover:bg-green-900 text-white py-2 rounded-xl font-medium">
                     OK
                 </button>
             </div>
@@ -446,18 +553,18 @@
         gridViewBtn.addEventListener('click', () => {
             gridView.classList.remove('hidden');
             listView.classList.add('hidden');
-            gridViewBtn.classList.add('bg-orange-100', 'text-orange-500');
+            gridViewBtn.classList.add('bg-orange-100', 'text-green-900');
             gridViewBtn.classList.remove('text-gray-400');
-            listViewBtn.classList.remove('bg-orange-100', 'text-orange-500');
+            listViewBtn.classList.remove('bg-orange-100', 'text-green-900');
             listViewBtn.classList.add('text-gray-400');
         });
 
         listViewBtn.addEventListener('click', () => {
             gridView.classList.add('hidden');
             listView.classList.remove('hidden');
-            listViewBtn.classList.add('bg-orange-100', 'text-orange-500');
+            listViewBtn.classList.add('bg-orange-100', 'text-green-900');
             listViewBtn.classList.remove('text-gray-400');
-            gridViewBtn.classList.remove('bg-orange-100', 'text-orange-500');
+            gridViewBtn.classList.remove('bg-orange-100', 'text-green-900');
             gridViewBtn.classList.add('text-gray-400');
 
             if (listView.children.length === 0) {
@@ -500,7 +607,7 @@
                         <p class="text-xs text-gray-500 line-clamp-1">${description}</p>
                         <div class="flex justify-between items-center mt-1">
                             <span class="text-orange-600 font-bold">${price}</span>
-                            <button class="add-to-cart btn-add bg-orange-500 hover:bg-orange-600 text-white py-1 px-2 rounded-full text-xs" data-id="${id}" data-name="${dataName}" data-price="${dataPrice}">
+                            <button class="add-to-cart btn-add bg-green-700 hover:bg-green-900 text-white py-1 px-2 rounded-full text-xs" data-id="${id}" data-name="${dataName}" data-price="${dataPrice}">
                                 + Tambah
                             </button>
                         </div>
@@ -519,7 +626,11 @@
             const image = item.querySelector('img').src;
             const description = item.querySelector('.text-gray-500.text-xs.mt-1').textContent;
 
-            currentDetailItem = { id, name, price };
+            currentDetailItem = {
+                id,
+                name,
+                price
+            };
             foodDetailTitle.textContent = name;
             foodDetailPrice.textContent = formattedPrice;
             document.getElementById('foodDetailImage').src = image;
@@ -564,7 +675,11 @@
 
         addToCartDetail.addEventListener('click', () => {
             if (currentDetailItem) {
-                const { id, name, price } = currentDetailItem;
+                const {
+                    id,
+                    name,
+                    price
+                } = currentDetailItem;
                 const existingItem = cart.find(item => item.id === id);
 
                 if (existingItem) {
@@ -640,10 +755,10 @@
                 console.log('Memanggil snap.pay dengan token:', result.snap_token);
                 snap.pay(result.snap_token, {
                     onSuccess: function(result) {
-        console.log('Pembayaran berhasil:', result);
-        window.lastTransactionResponse = result;
-        showSuccessPopup(result); // Pass just the result object
-    },
+                        console.log('Pembayaran berhasil:', result);
+                        window.lastTransactionResponse = result;
+                        showSuccessPopup(result); // Pass just the result object
+                    },
                     onPending: function(result) {
                         console.log('Pembayaran tertunda:', result);
                         showSuccessToast('Pembayaran tertunda, silakan selesaikan pembayaran.');
@@ -895,14 +1010,14 @@
                 console.log('Memanggil snap.pay dengan token:', result.snap_token);
                 snap.pay(result.snap_token, {
                     onSuccess: function(result) {
-        console.log('Pembayaran berhasil:', result);
-        window.lastTransactionResponse = result;
-        showSuccessPopup(result); // Pass just the result object
-        // Clear cart
-        cart = [];
-        customerName.value = '';
-        updateCart();
-    },
+                        console.log('Pembayaran berhasil:', result);
+                        window.lastTransactionResponse = result;
+                        showSuccessPopup(result); // Pass just the result object
+                        // Clear cart
+                        cart = [];
+                        customerName.value = '';
+                        updateCart();
+                    },
                     onPending: function(result) {
                         console.log('Pembayaran tertunda:', result);
                         showSuccessToast('Pembayaran tertunda, silakan selesaikan pembayaran.');
@@ -928,12 +1043,12 @@
         categoryButtons.forEach(button => {
             button.addEventListener('click', () => {
                 categoryButtons.forEach(btn => {
-                    btn.classList.remove('bg-orange-500', 'text-white');
+                    btn.classList.remove('bg-[#7c6a53]', 'text-white');
                     btn.classList.add('bg-white', 'text-gray-700');
                 });
 
                 button.classList.remove('bg-white', 'text-gray-700');
-                button.classList.add('bg-orange-500', 'text-white');
+                button.classList.add('bg-[#7c6a53]', 'text-white');
 
                 const selectedCategory = button.getAttribute('data-category');
 
@@ -968,38 +1083,43 @@
 
         // Perbaiki fungsi showSuccessPopup
         // Replace your current showSuccessPopup function with this:
-function showSuccessPopup(result) {
-    console.log('Menampilkan popup sukses dengan data:', result);
-    
-    // Make sure result is defined before proceeding
-    if (!result) {
-        console.error('Data transaksi kosong');
-        showSuccessToast('Terjadi kesalahan saat memproses transaksi');
-        return;
-    }
-    
-    // Handle different data structures that might be passed
-    const orderId = result.order_id || '';
-    const customerNameValue = customerName.value || modalCustomerName.value || '';
-    const amount = result.gross_amount || 0;
-    
-    successTransactionCode.textContent = orderId;
-    successCustomerName.textContent = customerNameValue;
-    successTotalPrice.textContent = `Rp${parseInt(amount).toLocaleString('id-ID')}`;
-    
-    // Handle QR code image
-    if (result.qr_url) {
-        successQrCode.src = result.qr_url;
-    } else {
-        // Fall back to a generated URL if qr_url is not available
-        successQrCode.src = `/storage/qrcodes/${orderId}.png`; // Placeholder image
-    }
-    
-    successPopup.classList.remove('hidden');
-}
+        function showSuccessPopup(result) {
+            console.log('Menampilkan popup sukses dengan data:', result);
+
+            // Make sure result is defined before proceeding
+            if (!result) {
+                console.error('Data transaksi kosong');
+                showSuccessToast('Terjadi kesalahan saat memproses transaksi');
+                return;
+            }
+
+            // Handle different data structures that might be passed
+            const orderId = result.order_id || '';
+            const customerNameValue = customerName.value || modalCustomerName.value || '';
+            const amount = result.gross_amount || 0;
+
+            successTransactionCode.textContent = orderId;
+            successCustomerName.textContent = customerNameValue;
+            successTotalPrice.textContent = `Rp${parseInt(amount).toLocaleString('id-ID')}`;
+
+            // Handle QR code image
+            if (result.qr_url) {
+                successQrCode.src = result.qr_url;
+            } else {
+                // Fall back to a generated URL if qr_url is not available
+                successQrCode.src = `/storage/qrcodes/${orderId}.png`; // Placeholder image
+            }
+
+            successPopup.classList.remove('hidden');
+        }
+
+        document.getElementById('closeSuccessPopup').addEventListener('click', function() {
+            const popup = document.getElementById('successPopup');
+            popup.classList.add('hidden');
+        });
 
         updateCart();
     </script>
 </body>
+
 </html>
-```

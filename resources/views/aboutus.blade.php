@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fore Coffee - Kopi Spesial Untuk Semua Orang</title>
+    <title>Himar Coffee</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -62,31 +63,58 @@
 </head>
 
 <body class="min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-[#FAF0E6] text-white flex items-center justify-between px-6 py-3 mx-4 mt-4 rounded-full shadow-lg">
-        <div class="flex items-center space-x-2">
-            <img src="assets/logo.png" alt="Logo" class="h-12 w-auto rounded-full">
-        </div>
-        <div class="hidden md:flex space-x-8 font-medium text-[#36454F]">
-            <a href="/" class="hover:underline hover:decoration-[#556B2F] hover:decoration-2 hover:underline-offset-2">Beranda</a>
-            <a href="/about-us" class="hover:underline hover:decoration-[#556B2F] hover:decoration-2 hover:underline-offset-2">About Us</a>
-            <a href="/menu" class="hover:underline hover:decoration-[#556B2F] hover:decoration-2 hover:underline-offset-2">Menu</a>
-        </div>
-        <div class="flex items-center space-x-2">
-            <svg class="w-5 h-5 text-[#8B4513]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.16 14h9.84c.75 0 1.41-.41 1.75-1.03l3.58-6.49a.996.996 0 0 0-.87-1.48H5.21L4.27 2H1v2h2l3.6 7.59-1.35 2.45C4.52 14.37 5.48 16 7 16h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12L7.16 14z" />
-            </svg>
-            <button class="bg-[#8B4513] text-white font-semibold w-24 px-4 py-2 rounded-full flex justify-center text-center space-x-2 border border-black hover:bg-[#556B2F] hover:text-white">
-                <span>Login</span>
-            </button>
+    <nav class="bg-[#FAF0E6] text-white px-6 py-3 mx-4 mt-4 rounded-full shadow-lg">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <img src="assets/logo.png" alt="Logo" class="h-12 w-auto rounded-full" />
+            </div>
+            <div class="hidden md:flex space-x-8 font-medium text-[#36454F]">
+                <a href="/">Beranda</a>
+                <a href="/about-us">About Us</a>
+                <a href="/menu">Menu</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <!-- Ikon keranjang -->
+                <div class="relative cursor-pointer p-2" id="cartButton">
+                    <i class="fas fa-shopping-cart text-gray-700 text-lg hover:text-orange-500 transition"></i>
+                    <span id="cartCount" class="cart-count hidden">0</span>
+                </div>
+                <a href="/login" class="hidden md:flex bg-[#8B4513] text-white font-semibold w-24 px-4 py-2 rounded-full border border-black hover:bg-[#556B2F] justify-center items-center">
+                    Login
+                </a>
+                <button onclick="toggleDropdown()" class="md:hidden text-[#36454F] focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </nav>
+
+    <div id="dropdownMenu" class="fixed top-0 left-0 w-full h-full bg-[#F0FAF7] z-50 hidden">
+        <div class="flex justify-between items-start p-6">
+            <button onclick="toggleDropdown()" class="text-[#004225] text-3xl font-bold">×</button>
+        </div>
+        <div class="flex flex-col items-start px-10 space-y-6 text-[#004225] font-semibold text-lg">
+            <a href="/" onclick="toggleDropdown()">Beranda</a>
+            <a href="/about-us" onclick="toggleDropdown()">About Us</a>
+            <a href="/menu" onclick="toggleDropdown()">Menu</a>
+            <a href="/login" class="mt-4 bg-[#8B4513] text-white px-6 py-2 rounded-full border border-black hover:bg-[#556B2F]">Login</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdownMenu');
+            dropdown.classList.toggle('hidden');
+        }
+    </script>
 
     <!-- Hero Section -->
     <section class="bg-white py-16 md:py-24">
         <div class="container mx-auto px-4 md:px-8">
             <div>
-                <img src="assets/image_banner.png" alt="Section Image" class="rounded-lg shadow-md w-full h-auto object-cover">
+                <img src="assets/image_banner.svg" alt="Section Image" class="rounded-lg shadow-md w-full h-auto object-cover">
             </div>
         </div>
     </section>
@@ -121,20 +149,20 @@
         <div class="container mx-auto px-4 md:px-8">
             <div class="flex flex-col md:flex-row items-center justify-between">
                 <div class="md:w-1/2">
-                    <img src="assets/image_aboutUs.png" alt="Mobile App" class="rounded-xl mx-auto w-auto h-auto max-w-full">
+                    <img src="assets/preview1.svg" alt="Mobile App" class="rounded-xl mx-auto w-auto h-auto max-w-full">
                 </div>
                 <div class="md:w-1/2 mb-8 md:mb-0 flex flex-col items-center">
                     <h2 class="text-4xl md:text-5xl font-bold mb-6 text-center">Tentang<br>Himar Dan Filosofi</h2>
                     <p class="text-lg mb-8 max-w-md transition-opacity duration-500 text-center" x-text="paragraphs[currentIndex]" x-ref="paragraph"></p>
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <button class="bg-green-700 hover:bg-green-600 text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center shadow-md transition duration-300 ease-in-out">
+                        <a href="/menu" class="bg-green-700 hover:bg-green-600 text-white px-8 py-4 rounded-full font-semibold flex items-center justify-center shadow-md transition duration-300 ease-in-out">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-cart w-6 h-6 mr-3">
                                 <circle cx="9" cy="21" r="1" />
                                 <circle cx="20" cy="21" r="1" />
                                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                             </svg>
                             Order Now
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
