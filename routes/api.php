@@ -11,4 +11,4 @@ Route::get('/user', function (Request $request) {
 
 Route::get('/transactions/search', [OrderController::class, 'searchTransaction']);
 
-Route::post('midtrans/notification', [TransactionController::class, 'handleNotification']);
+Route::post('/midtrans/notification', [TransactionController::class, 'handleNotification']);

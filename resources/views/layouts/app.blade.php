@@ -276,7 +276,7 @@
         
         <div class="sidebar-header">
             <i class="fas fa-coffee me-2"></i>
-            <h3 class="logo mb-0"><span class="logo-text">Nama Cafe</span></h3>
+            <h3 class="logo mb-0"><span class="logo-text">Himar</span></h3>
         </div>
         
         <ul class="sidebar-nav">

@@ -207,13 +207,17 @@ class TransactionController extends Controller
         $input = file_get_contents('php://input');
         Log::info('Raw input dari Midtrans', ['input' => $input]);
         
+        // Decode JSON input menjadi array
+        $notificationArray = json_decode($input, true);
+        
+        // Buat objek notification dengan input JSON
         $notification = new Notification();
         
-        // Ekstrak data penting
-        $orderId = $notification->order_id;
-        $transactionStatus = $notification->transaction_status;
-        $fraudStatus = $notification->fraud_status;
-        $paymentType = $notification->payment_type ?? 'unknown';
+        // Ekstrak data penting dari array, bukan dari objek yang belum diinisialisasi
+        $orderId = $notificationArray['order_id'] ?? null;
+        $transactionStatus = $notificationArray['transaction_status'] ?? null;
+        $fraudStatus = $notificationArray['fraud_status'] ?? null;
+        $paymentType = $notificationArray['payment_type'] ?? 'unknown';
         
         Log::info('Data transaksi dari Midtrans', [
             'order_id' => $orderId,
@@ -221,6 +225,11 @@ class TransactionController extends Controller
             'fraud_status' => $fraudStatus,
             'payment_type' => $paymentType
         ]);
+        
+        // Validasi data penting
+        if (!$orderId || !$transactionStatus) {
+            throw new \Exception('Data transaksi tidak lengkap');
+        }
         
         // Cari transaksi berdasarkan kode
         $transaction = Transaction::where('transaction_code', $orderId)->firstOrFail();
@@ -240,9 +249,6 @@ class TransactionController extends Controller
             $transaction->payment_status = 'pending';
         }
         
-        // Tambahkan metadata pembayaran
-        $transaction->payment_method = $paymentType;
-        $transaction->payment_data = json_encode($notification->getResponse());
         
         // Simpan transaksi
         $transaction->save();
