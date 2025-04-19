@@ -1084,7 +1084,7 @@
         // Perbaiki fungsi showSuccessPopup
         // Replace your current showSuccessPopup function with this:
         function showSuccessPopup(result) {
-            console.log('Menampilkan popup sukses dengan data:', result);
+            console.log('Mengarahkan ke halaman sukses dengan data:', result);
 
             // Make sure result is defined before proceeding
             if (!result) {
@@ -1093,24 +1093,17 @@
                 return;
             }
 
-            // Handle different data structures that might be passed
+            // Extract transaction details
             const orderId = result.order_id || '';
             const customerNameValue = customerName.value || modalCustomerName.value || '';
             const amount = result.gross_amount || 0;
+            const qrCodeUrl = result.qr_url || `/storage/qrcodes/${orderId}.png`;
 
-            successTransactionCode.textContent = orderId;
-            successCustomerName.textContent = customerNameValue;
-            successTotalPrice.textContent = `Rp${parseInt(amount).toLocaleString('id-ID')}`;
+            // Construct URL with query parameters
+            const redirectUrl = `/complete?order_id=${encodeURIComponent(orderId)}&customer_name=${encodeURIComponent(customerNameValue)}&total=${encodeURIComponent(amount)}&qr_url=${encodeURIComponent(qrCodeUrl)}`;
 
-            // Handle QR code image
-            if (result.qr_url) {
-                successQrCode.src = result.qr_url;
-            } else {
-                // Fall back to a generated URL if qr_url is not available
-                successQrCode.src = `/storage/qrcodes/${orderId}.png`; // Placeholder image
-            }
-
-            successPopup.classList.remove('hidden');
+            // Redirect to the complete.blade.php page
+            window.location.href = redirectUrl;
         }
 
         document.getElementById('closeSuccessPopup').addEventListener('click', function() {

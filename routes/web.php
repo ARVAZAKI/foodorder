@@ -17,6 +17,9 @@ Route::get('/about-us', function () {
 Route::get('/tes', function () {
     return view('tes');
 });
+Route::get('/complete', function () {
+    return view('complete');
+});
 Route::resource('/products', ItemController::class)->middleware(['auth']);
 Route::resource('/categories', CategoryController::class)->middleware(['auth']);
 Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
