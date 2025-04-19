@@ -3,24 +3,27 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-10">
+        <div class="col-md-12">
+            <!-- QR Scanner Card -->
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Scan QR Code</span>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-lg-6 mb-4 mb-lg-0">
                             <button id="startButton" class="btn btn-primary mb-3">Buka Kamera</button>
-                            <div id="qr-reader" style="width: 100%; max-width: 500px;"></div>
+                            <div id="qr-reader" class="w-100" style="max-width: 100%; height: auto;"></div>
                             <div id="qr-reader-results" class="mt-3"></div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-lg-6">
                             <div class="form-group">
                                 <label for="searchCode">Kode Transaksi:</label>
                                 <div class="input-group mb-3">
                                     <input type="text" class="form-control" id="searchCode" placeholder="Masukkan kode transaksi">
-                                    <button class="btn btn-outline-secondary" type="button" id="searchButton">Cari</button>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" id="searchButton">Cari</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -28,14 +31,15 @@
                 </div>
             </div>
 
+            <!-- Transactions Card -->
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Daftar Pesanan</span>
                 </div>
 
-                <div class="card-body">
+                <div class="card-body px-0 px-md-3">
                     @if (session('success'))
-                        <div class="alert alert-success" role="alert">
+                        <div class="alert alert-success mx-2" role="alert">
                             {{ session('success') }}
                         </div>
                     @endif
@@ -45,11 +49,11 @@
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
-                                    <th scope="col">Kode Transaksi</th>
+                                    <th scope="col">Kode</th>
                                     <th scope="col">Nama</th>
                                     <th scope="col">Item</th>
-                                    <th scope="col">Total Harga</th>
-                                    <th scope="col">Status Pembayaran</th>
+                                    <th scope="col">Total</th>
+                                    <th scope="col">Status</th>
                                     <th scope="col">Aksi</th>
                                 </tr>
                             </thead>
@@ -57,12 +61,12 @@
                                 @forelse($transactions as $index => $transaction)
                                 <tr data-transaction-code="{{ $transaction->transaction_code }}">
                                     <td>{{ ($transactions->currentPage() - 1) * $transactions->perPage() + $index + 1 }}</td>
-                                    <td>{{ $transaction->transaction_code }}</td>
-                                    <td>{{ $transaction->name }}</td>
+                                    <td><span class="d-inline-block text-truncate" style="max-width: 120px;">{{ $transaction->transaction_code }}</span></td>
+                                    <td><span class="d-inline-block text-truncate" style="max-width: 120px;">{{ $transaction->name }}</span></td>
                                     <td>
                                         <ul class="list-unstyled mb-0">
                                         @foreach($transaction->cart as $cart)
-                                            <li>{{ $cart->item->name }} ({{ $cart->quantity }}x) - Rp {{ number_format($cart->item->price * $cart->quantity, 0, ',', '.') }}</li>
+                                            <li class="text-truncate" style="max-width: 200px;">{{ $cart->item->name }} ({{ $cart->quantity }}x) - Rp {{ number_format($cart->item->price * $cart->quantity, 0, ',', '.') }}</li>
                                         @endforeach
                                         </ul>
                                     </td>
@@ -85,34 +89,56 @@
                         </table>
                     </div>
                     
-                    <div class="d-flex justify-content-center mt-4" id="pagination-container">
-                        <div class="text-center">
+                    <!-- Pagination -->
+                    <div class="d-flex justify-content-center mt-4 flex-wrap" id="pagination-container">
+                        <div class="text-center w-100">
                             @if ($transactions->lastPage() > 1)
-                                <div class="d-flex justify-content-between align-items-center">
-                                    {{ $transactions->firstItem() }} to {{ $transactions->lastItem() }} of {{ $transactions->total() }} results
+                                <div class="d-flex justify-content-center align-items-center mb-2">
+                                    <small>{{ $transactions->firstItem() }} to {{ $transactions->lastItem() }} of {{ $transactions->total() }} results</small>
                                 </div>
                                 
-                                <div class="d-inline-flex mt-3">
+                                <div class="d-flex justify-content-center flex-wrap mt-2">
                                     @if ($transactions->onFirstPage())
-                                        <span class="btn btn-outline-secondary disabled">« Previous</span>
+                                        <span class="btn btn-sm btn-outline-secondary disabled m-1">« Previous</span>
                                     @else
-                                        <a href="{{ $transactions->previousPageUrl() }}" class="btn btn-outline-secondary">« Previous</a>
+                                        <a href="{{ $transactions->previousPageUrl() }}" class="btn btn-sm btn-outline-secondary m-1">« Previous</a>
                                     @endif
                                     
-                                    <div class="mx-2 d-flex">
-                                        @for ($i = 1; $i <= $transactions->lastPage(); $i++)
+                                    <div class="d-flex flex-wrap mx-1">
+                                        @php
+                                            $maxPages = 5; // Maximum number of pages to display
+                                            $startPage = max(1, min($transactions->currentPage() - floor($maxPages/2), $transactions->lastPage() - $maxPages + 1));
+                                            $endPage = min($startPage + $maxPages - 1, $transactions->lastPage());
+                                            $startPage = max(1, $endPage - $maxPages + 1);
+                                        @endphp
+                                        
+                                        @if($startPage > 1)
+                                            <a href="{{ $transactions->url(1) }}" class="btn btn-sm btn-outline-secondary m-1">1</a>
+                                            @if($startPage > 2)
+                                                <span class="d-flex align-items-center px-2">...</span>
+                                            @endif
+                                        @endif
+                                        
+                                        @for ($i = $startPage; $i <= $endPage; $i++)
                                             @if ($i == $transactions->currentPage())
-                                                <span class="btn btn-outline-primary active">{{ $i }}</span>
+                                                <span class="btn btn-sm btn-outline-primary active m-1">{{ $i }}</span>
                                             @else
-                                                <a href="{{ $transactions->url($i) }}" class="btn btn-outline-secondary">{{ $i }}</a>
+                                                <a href="{{ $transactions->url($i) }}" class="btn btn-sm btn-outline-secondary m-1">{{ $i }}</a>
                                             @endif
                                         @endfor
+                                        
+                                        @if($endPage < $transactions->lastPage())
+                                            @if($endPage < $transactions->lastPage() - 1)
+                                                <span class="d-flex align-items-center px-2">...</span>
+                                            @endif
+                                            <a href="{{ $transactions->url($transactions->lastPage()) }}" class="btn btn-sm btn-outline-secondary m-1">{{ $transactions->lastPage() }}</a>
+                                        @endif
                                     </div>
                                     
                                     @if ($transactions->hasMorePages())
-                                        <a href="{{ $transactions->nextPageUrl() }}" class="btn btn-outline-primary">Next »</a>
+                                        <a href="{{ $transactions->nextPageUrl() }}" class="btn btn-sm btn-outline-primary m-1">Next »</a>
                                     @else
-                                        <span class="btn btn-outline-secondary disabled">Next »</span>
+                                        <span class="btn btn-sm btn-outline-secondary disabled m-1">Next »</span>
                                     @endif
                                 </div>
                             @endif
@@ -138,6 +164,17 @@
     const searchButton = document.getElementById('searchButton');
     const paginationContainer = document.getElementById('pagination-container');
 
+    // Handle responsive QR Reader size
+    function updateQrReaderSize() {
+        const containerWidth = qrReader.parentElement.clientWidth;
+        const size = Math.min(containerWidth, 500); // Max size 500px
+        qrReader.style.height = size + 'px';
+    }
+
+    // Call on page load and window resize
+    updateQrReaderSize();
+    window.addEventListener('resize', updateQrReaderSize);
+
     // Inisialisasi scanner dengan pendekatan yang berbeda
     async function initializeScanner() {
         if (html5QrCode === null) {
@@ -159,10 +196,13 @@
                 
                 const cameraId = rearCamera ? rearCamera.id : cameras[0].id;
                 
-                // Konfigurasi yang lebih agresif
+                // Konfigurasi yang lebih responsif
+                const containerWidth = qrReader.clientWidth;
+                const qrboxSize = Math.min(containerWidth, 300); // Responsive QR box size
+                
                 const config = {
-                    fps: 30, // FPS sangat tinggi
-                    qrbox: { width: 400, height: 400 }, // Area pemindaian lebih besar
+                    fps: 30,
+                    qrbox: { width: qrboxSize, height: qrboxSize },
                     aspectRatio: 1.0,
                     disableFlip: false,
                     formatsToSupport: [
@@ -262,7 +302,7 @@
     // Add button to reset search results
     const resetButton = document.createElement('button');
     resetButton.className = 'btn btn-secondary ms-2';
-    resetButton.textContent = 'Reset Pencarian';
+    resetButton.textContent = 'Reset';
     resetButton.addEventListener('click', function() {
         resetSearch();
         searchCode.value = '';
@@ -275,6 +315,14 @@
             searchTransaction(code);
         } else {
             alert('Masukkan kode transaksi terlebih dahulu');
+        }
+    });
+
+    // Add enter key support for search
+    searchCode.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            searchButton.click();
         }
     });
 
@@ -297,7 +345,10 @@
             if (transactionCode === code) {
                 row.classList.add('table-primary');
                 row.style.display = '';
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Use smoother scrolling with a delay for better UX
+                setTimeout(() => {
+                    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
                 found = true;
             } else {
                 row.style.display = 'none';

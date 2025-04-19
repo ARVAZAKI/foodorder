@@ -1084,27 +1084,26 @@
         // Perbaiki fungsi showSuccessPopup
         // Replace your current showSuccessPopup function with this:
         function showSuccessPopup(result) {
-            console.log('Mengarahkan ke halaman sukses dengan data:', result);
+    console.log('Mengarahkan ke halaman sukses dengan data:', result);
 
-            // Make sure result is defined before proceeding
-            if (!result) {
-                console.error('Data transaksi kosong');
-                showSuccessToast('Terjadi kesalahan saat memproses transaksi');
-                return;
-            }
+    // Make sure result is defined before proceeding
+    if (!result) {
+        console.error('Data transaksi kosong');
+        showSuccessToast('Terjadi kesalahan saat memproses transaksi');
+        return;
+    }
 
-            // Extract transaction details
-            const orderId = result.order_id || '';
-            const customerNameValue = customerName.value || modalCustomerName.value || '';
-            const amount = result.gross_amount || 0;
-            const qrCodeUrl = result.qr_url || `/storage/qrcodes/${orderId}.png`;
+    // Extract transaction details
+    const orderId = result.order_id || '';
+    const customerNameValue = customerName.value || modalCustomerName.value || '';
+    const amount = result.gross_amount || 0;
 
-            // Construct URL with query parameters
-            const redirectUrl = `/complete?order_id=${encodeURIComponent(orderId)}&customer_name=${encodeURIComponent(customerNameValue)}&total=${encodeURIComponent(amount)}&qr_url=${encodeURIComponent(qrCodeUrl)}`;
+    // Menggunakan route yang sesuai dengan function completePayment
+    const redirectUrl = `/midtrans/complete?order_id=${encodeURIComponent(orderId)}`;
 
-            // Redirect to the complete.blade.php page
-            window.location.href = redirectUrl;
-        }
+    // Redirect to the complete.blade.php page
+    window.location.href = redirectUrl;
+}
 
         document.getElementById('closeSuccessPopup').addEventListener('click', function() {
             const popup = document.getElementById('successPopup');

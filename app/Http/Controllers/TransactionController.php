@@ -269,4 +269,35 @@ class TransactionController extends Controller
         return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
     }
 }
+
+public function completePayment(Request $request)
+{
+    $transactionCode = $request->query('order_id');
+    
+    if (!$transactionCode) {
+        return redirect('/')->with('error', 'Kode transaksi tidak ditemukan');
+    }
+    
+    // Retrieve the transaction from database
+    $transaction = Transaction::where('transaction_code', $transactionCode)->first();
+    
+    if (!$transaction) {
+        return redirect('/')->with('error', 'Transaksi tidak ditemukan');
+    }
+    
+    // Get the QR code path
+    $qrPath = 'qrcodes/' . $transaction->transaction_code . '.png';
+    $qrUrl = Storage::disk('public')->exists($qrPath) ? asset('storage/' . $qrPath) : null;
+    
+    // Get items in the cart for this transaction
+    $cartItems = Cart::where('transaction_id', $transaction->id)
+                    ->with('item') // Make sure you have this relationship defined
+                    ->get();
+    
+    return view('complete', [
+        'transaction' => $transaction,
+        'cartItems' => $cartItems,
+        'qrUrl' => $qrUrl
+    ]);
+}
 }
